@@ -1,5 +1,5 @@
+using System;
 using UnityEngine;
-using UnityEngine.Events;
 using UnityEngine.InputSystem;
 
 public class PlayerInputController : MonoBehaviour
@@ -16,13 +16,15 @@ public class PlayerInputController : MonoBehaviour
         _moveAction = _playerNormalMap.FindAction("Move", throwIfNotFound: true);
         _jumpAction = _playerNormalMap.FindAction("Jump", throwIfNotFound: true);
 
-        _jumpAction.performed += Jump;
-        _moveAction.performed += Move;
+        SetCallBack(_moveAction, Move);
+        SetCallBack(_jumpAction, Jump);
     }
 
-    private void SetCallBack(InputAction action, InputAction.CallbackContext callback)
+    private static void SetCallBack(InputAction action, Action<InputAction.CallbackContext> callback)
     {
-        
+        action.started += callback;
+        action.performed += callback;
+        action.canceled += callback;
     }
 
     private static void Jump(InputAction.CallbackContext ctx)
@@ -32,6 +34,6 @@ public class PlayerInputController : MonoBehaviour
 
     private static void Move(InputAction.CallbackContext ctx)
     {
-        
+
     }
 }
