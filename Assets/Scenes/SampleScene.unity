@@ -636,6 +636,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1387539402}
   - component: {fileID: 1387539403}
+  - component: {fileID: 1387539404}
   m_Layer: 0
   m_Name: TP_Camera
   m_TagString: Untagged
@@ -698,6 +699,22 @@ MonoBehaviour:
         m_Calls: []
   m_LegacyBlendHint: 0
   m_ComponentOwner: {fileID: 283304026}
+--- !u!114 &1387539404
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1387539401}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 89c851f0819d4167bd2d9d19e4c99121, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  cameraTarget: {fileID: 822940921}
+  topClamp: 70
+  bottomClamp: -30
+  sensitivity: 0.12
 --- !u!1001 &4036464950552357912
 PrefabInstance:
   m_ObjectHideFlags: 0

@@ -12,6 +12,7 @@ public class StartUp : MonoBehaviour
         Log.Info("StartUp");
         AudioMgr.Instance.Init();
         //ConfigMgr.Instance.Init();
+        PlayerInputMgr.Instance.Init();
     }
 
     private void Start()

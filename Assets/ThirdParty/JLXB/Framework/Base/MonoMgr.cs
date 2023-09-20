@@ -16,15 +16,12 @@ namespace JLXB.Framework
             _mono = this;
         }
 
-        void Update()
+        private void Update()
         {
-            if (UpdateEvent != null)
-            {
-                UpdateEvent?.Invoke();
-            }
+            UpdateEvent?.Invoke();
         }
 
-        void OnDestroy()
+        private void OnDestroy()
         {
             DestroyEvent?.Invoke();
             DestroyEvent = null;

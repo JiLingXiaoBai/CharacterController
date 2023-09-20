@@ -1,29 +1,20 @@
-using System.Collections;
-using System.Collections.Generic;
 using JLXB.Framework;
 using UnityEngine;
 
 public class PlayerInputMgr : Singleton<PlayerInputMgr>
 {
     private PlayerInputController _inputController;
-    
     private PlayerInputMgr(){}
 
     public void Init()
     {
         _inputController ??= new PlayerInputController();
-        MonoMgr.Instance.AddUpdateListener(UpdateJumpValue);
+        _inputController.Enable();
+        _inputController.PlayerNormal.Enable();
     }
-
-    private float _playerJump;
-
-    public Vector2 PlayerMovement => _inputController.PlayerNormal.Move.ReadValue<Vector2>();
     
-    public float PlayerJump;
-
-    private static void UpdateJumpValue()
-    {
-        
-    }
-
+    public Vector2 playerMovement => _inputController.PlayerNormal.Movement.ReadValue<Vector2>();
+    public bool playerJump => _inputController.PlayerNormal.Jump.WasPressedThisFrame();
+    public bool playerStopJump => _inputController.PlayerNormal.Jump.WasReleasedThisFrame();
+    public Vector2 cameraLook => _inputController.PlayerNormal.CameraLook.ReadValue<Vector2>();
 }

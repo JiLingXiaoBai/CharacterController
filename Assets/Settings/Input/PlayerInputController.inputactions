@@ -1,12 +1,12 @@
 {
-    "name": "InputControls",
+    "name": "PlayerInputController",
     "maps": [
         {
             "name": "PlayerNormal",
             "id": "39050611-69a8-4977-80ce-3ba7d3e554c8",
             "actions": [
                 {
-                    "name": "Move",
+                    "name": "Movement",
                     "type": "Value",
                     "id": "6a9dbbfd-904b-481e-a74f-7fb0c90212bb",
                     "expectedControlType": "Vector2",
@@ -19,9 +19,18 @@
                     "type": "Button",
                     "id": "42a23eea-6ce7-490e-9d48-48bd1bb52ee4",
                     "expectedControlType": "Button",
-                    "processors": "",   
+                    "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
+                },
+                {
+                    "name": "CameraLook",
+                    "type": "Value",
+                    "id": "740e0428-75f2-4393-8f60-c6065483eef7",
+                    "expectedControlType": "Vector2",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
                 }
             ],
             "bindings": [
@@ -32,9 +41,64 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "GamePad",
-                    "action": "Move",
+                    "action": "Movement",
                     "isComposite": false,
                     "isPartOfComposite": false
+                },
+                {
+                    "name": "2D Vector",
+                    "id": "7932b3cd-0025-44ae-823e-5ebe5d65b2b3",
+                    "path": "2DVector",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Movement",
+                    "isComposite": true,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "up",
+                    "id": "03dbd930-0b1f-4283-83a4-3260b7451cfb",
+                    "path": "<Keyboard>/w",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "PC",
+                    "action": "Movement",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "down",
+                    "id": "4ad06a3f-f472-42c4-98b2-9fe5a2238f94",
+                    "path": "<Keyboard>/s",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "PC",
+                    "action": "Movement",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "left",
+                    "id": "1a1b9902-b230-4326-9c20-c3d1920c3771",
+                    "path": "<Keyboard>/a",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "PC",
+                    "action": "Movement",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "right",
+                    "id": "072ad253-1f89-4376-9b96-e36bbfcecf41",
+                    "path": "<Keyboard>/d",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "PC",
+                    "action": "Movement",
+                    "isComposite": false,
+                    "isPartOfComposite": true
                 },
                 {
                     "name": "",
@@ -46,6 +110,39 @@
                     "action": "Jump",
                     "isComposite": false,
                     "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "b2f9c397-97a5-4963-a8d8-db6f44a1d1d5",
+                    "path": "<Keyboard>/space",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "PC",
+                    "action": "Jump",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "2efe8423-f10a-46fd-8c17-b50d1efafe41",
+                    "path": "<Gamepad>/rightStick",
+                    "interactions": "",
+                    "processors": "ScaleVector2(x=5,y=5)",
+                    "groups": "GamePad",
+                    "action": "CameraLook",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "32bb940b-61bf-467b-96f7-54d5069cc92d",
+                    "path": "<Pointer>/delta",
+                    "interactions": "",
+                    "processors": "ScaleVector2",
+                    "groups": "PC",
+                    "action": "CameraLook",
+                    "isComposite": false,
+                    "isPartOfComposite": false
                 }
             ]
         }
@@ -54,6 +151,11 @@
         {
             "name": "GamePad",
             "bindingGroup": "GamePad",
+            "devices": []
+        },
+        {
+            "name": "PC",
+            "bindingGroup": "PC",
             "devices": []
         }
     ]
