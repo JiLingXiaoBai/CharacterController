@@ -1,8 +1,8 @@
 {
-    "name": "PlayerInputController",
+    "name": "InputController",
     "maps": [
         {
-            "name": "PlayerNormal",
+            "name": "Gameplay",
             "id": "39050611-69a8-4977-80ce-3ba7d3e554c8",
             "actions": [
                 {

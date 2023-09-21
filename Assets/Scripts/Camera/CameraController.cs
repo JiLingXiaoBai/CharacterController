@@ -1,27 +1,18 @@
+using JLXB.Framework.Timer;
 using UnityEngine;
 
 public class CameraController : MonoBehaviour
 {
     public Transform cameraTarget;
     
-    private void Awake()
-    {
-        //todo Test to delete
-#if UNITY_EDITOR
-        InputMgr.Instance.Init();
-#endif
-        CameraMgr.Instance.Init(cameraTarget.rotation.eulerAngles);
-    }
-
     private void Start()
     {
-        Cursor.visible = false;
-        Cursor.lockState = CursorLockMode.Locked;
+        CameraMgr.Instance.Init(cameraTarget.rotation.eulerAngles);
     }
-
+    
     private void LateUpdate()
     {
-        var cameraLook = InputMgr.Instance.cameraLook;
+        var cameraLook = InputMgr.Instance.CameraLook;
         var cameraRotation = CameraMgr.Instance.CameraRotationViaInput(cameraLook);
         cameraTarget.rotation = cameraRotation;
     }

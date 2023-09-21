@@ -24,7 +24,7 @@ public partial class @InputController: IInputActionCollection2, IDisposable
     ""name"": ""InputController"",
     ""maps"": [
         {
-            ""name"": ""PlayerNormal"",
+            ""name"": ""Gameplay"",
             ""id"": ""39050611-69a8-4977-80ce-3ba7d3e554c8"",
             ""actions"": [
                 {
@@ -182,11 +182,11 @@ public partial class @InputController: IInputActionCollection2, IDisposable
         }
     ]
 }");
-        // PlayerNormal
-        m_PlayerNormal = asset.FindActionMap("PlayerNormal", throwIfNotFound: true);
-        m_PlayerNormal_Movement = m_PlayerNormal.FindAction("Movement", throwIfNotFound: true);
-        m_PlayerNormal_Jump = m_PlayerNormal.FindAction("Jump", throwIfNotFound: true);
-        m_PlayerNormal_CameraLook = m_PlayerNormal.FindAction("CameraLook", throwIfNotFound: true);
+        // Gameplay
+        m_Gameplay = asset.FindActionMap("Gameplay", throwIfNotFound: true);
+        m_Gameplay_Movement = m_Gameplay.FindAction("Movement", throwIfNotFound: true);
+        m_Gameplay_Jump = m_Gameplay.FindAction("Jump", throwIfNotFound: true);
+        m_Gameplay_CameraLook = m_Gameplay.FindAction("CameraLook", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -245,28 +245,28 @@ public partial class @InputController: IInputActionCollection2, IDisposable
         return asset.FindBinding(bindingMask, out action);
     }
 
-    // PlayerNormal
-    private readonly InputActionMap m_PlayerNormal;
-    private List<IPlayerNormalActions> m_PlayerNormalActionsCallbackInterfaces = new List<IPlayerNormalActions>();
-    private readonly InputAction m_PlayerNormal_Movement;
-    private readonly InputAction m_PlayerNormal_Jump;
-    private readonly InputAction m_PlayerNormal_CameraLook;
-    public struct PlayerNormalActions
+    // Gameplay
+    private readonly InputActionMap m_Gameplay;
+    private List<IGameplayActions> m_GameplayActionsCallbackInterfaces = new List<IGameplayActions>();
+    private readonly InputAction m_Gameplay_Movement;
+    private readonly InputAction m_Gameplay_Jump;
+    private readonly InputAction m_Gameplay_CameraLook;
+    public struct GameplayActions
     {
         private @InputController m_Wrapper;
-        public PlayerNormalActions(@InputController wrapper) { m_Wrapper = wrapper; }
-        public InputAction @Movement => m_Wrapper.m_PlayerNormal_Movement;
-        public InputAction @Jump => m_Wrapper.m_PlayerNormal_Jump;
-        public InputAction @CameraLook => m_Wrapper.m_PlayerNormal_CameraLook;
-        public InputActionMap Get() { return m_Wrapper.m_PlayerNormal; }
+        public GameplayActions(@InputController wrapper) { m_Wrapper = wrapper; }
+        public InputAction @Movement => m_Wrapper.m_Gameplay_Movement;
+        public InputAction @Jump => m_Wrapper.m_Gameplay_Jump;
+        public InputAction @CameraLook => m_Wrapper.m_Gameplay_CameraLook;
+        public InputActionMap Get() { return m_Wrapper.m_Gameplay; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
         public bool enabled => Get().enabled;
-        public static implicit operator InputActionMap(PlayerNormalActions set) { return set.Get(); }
-        public void AddCallbacks(IPlayerNormalActions instance)
+        public static implicit operator InputActionMap(GameplayActions set) { return set.Get(); }
+        public void AddCallbacks(IGameplayActions instance)
         {
-            if (instance == null || m_Wrapper.m_PlayerNormalActionsCallbackInterfaces.Contains(instance)) return;
-            m_Wrapper.m_PlayerNormalActionsCallbackInterfaces.Add(instance);
+            if (instance == null || m_Wrapper.m_GameplayActionsCallbackInterfaces.Contains(instance)) return;
+            m_Wrapper.m_GameplayActionsCallbackInterfaces.Add(instance);
             @Movement.started += instance.OnMovement;
             @Movement.performed += instance.OnMovement;
             @Movement.canceled += instance.OnMovement;
@@ -278,7 +278,7 @@ public partial class @InputController: IInputActionCollection2, IDisposable
             @CameraLook.canceled += instance.OnCameraLook;
         }
 
-        private void UnregisterCallbacks(IPlayerNormalActions instance)
+        private void UnregisterCallbacks(IGameplayActions instance)
         {
             @Movement.started -= instance.OnMovement;
             @Movement.performed -= instance.OnMovement;
@@ -291,21 +291,21 @@ public partial class @InputController: IInputActionCollection2, IDisposable
             @CameraLook.canceled -= instance.OnCameraLook;
         }
 
-        public void RemoveCallbacks(IPlayerNormalActions instance)
+        public void RemoveCallbacks(IGameplayActions instance)
         {
-            if (m_Wrapper.m_PlayerNormalActionsCallbackInterfaces.Remove(instance))
+            if (m_Wrapper.m_GameplayActionsCallbackInterfaces.Remove(instance))
                 UnregisterCallbacks(instance);
         }
 
-        public void SetCallbacks(IPlayerNormalActions instance)
+        public void SetCallbacks(IGameplayActions instance)
         {
-            foreach (var item in m_Wrapper.m_PlayerNormalActionsCallbackInterfaces)
+            foreach (var item in m_Wrapper.m_GameplayActionsCallbackInterfaces)
                 UnregisterCallbacks(item);
-            m_Wrapper.m_PlayerNormalActionsCallbackInterfaces.Clear();
+            m_Wrapper.m_GameplayActionsCallbackInterfaces.Clear();
             AddCallbacks(instance);
         }
     }
-    public PlayerNormalActions @PlayerNormal => new PlayerNormalActions(this);
+    public GameplayActions @Gameplay => new GameplayActions(this);
     private int m_GamePadSchemeIndex = -1;
     public InputControlScheme GamePadScheme
     {
@@ -324,7 +324,7 @@ public partial class @InputController: IInputActionCollection2, IDisposable
             return asset.controlSchemes[m_PCSchemeIndex];
         }
     }
-    public interface IPlayerNormalActions
+    public interface IGameplayActions
     {
         void OnMovement(InputAction.CallbackContext context);
         void OnJump(InputAction.CallbackContext context);
