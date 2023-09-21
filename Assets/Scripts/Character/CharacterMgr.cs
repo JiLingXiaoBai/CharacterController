@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using JLXB.Framework;
 using UnityEngine;
 
-public class PlayerMgr : Singleton<PlayerMgr>
+public class CharacterMgr : Singleton<CharacterMgr>
 {
-    private PlayerMgr(){}
+    private CharacterMgr(){}
 }
