@@ -19,7 +19,7 @@ public class CameraController : MonoBehaviour
     {
         //todo Test to delete
 #if UNITY_EDITOR
-        PlayerInputMgr.Instance.Init();
+        InputMgr.Instance.Init();
 #endif
         var cameraTargetAngles = cameraTarget.rotation.eulerAngles;
         _cameraTargetPitch = cameraTargetAngles.x;
@@ -39,7 +39,7 @@ public class CameraController : MonoBehaviour
 
     private void CameraRotation()
     {
-        _cameraDir = PlayerInputMgr.Instance.cameraLook;
+        _cameraDir = InputMgr.Instance.cameraLook;
         if (_cameraDir.sqrMagnitude >= CameraThreshold)
         {
             _cameraTargetPitch -= _cameraDir.y * sensitivity;

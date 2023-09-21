@@ -1,14 +1,14 @@
 using JLXB.Framework;
 using UnityEngine;
 
-public class PlayerInputMgr : Singleton<PlayerInputMgr>
+public class InputMgr : Singleton<InputMgr>
 {
-    private PlayerInputController _inputController;
-    private PlayerInputMgr(){}
+    private InputController _inputController;
+    private InputMgr(){}
 
     public void Init()
     {
-        _inputController ??= new PlayerInputController();
+        _inputController ??= new InputController();
         _inputController.Enable();
         _inputController.PlayerNormal.Enable();
     }
