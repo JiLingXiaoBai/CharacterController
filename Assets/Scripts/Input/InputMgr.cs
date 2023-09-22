@@ -16,8 +16,6 @@ public class InputMgr : Singleton<InputMgr>
     public bool StopJump => _inputController.Gameplay.Jump.WasReleasedThisFrame();
     public Vector2 CameraLook => _inputController.Gameplay.CameraLook.ReadValue<Vector2>();
     
-    public void SwitchToDynamicUpdateMode() => InputSystem.settings.updateMode = InputSettings.UpdateMode.ProcessEventsInDynamicUpdate;
-    public void SwitchToFixedUpdateMode() => InputSystem.settings.updateMode = InputSettings.UpdateMode.ProcessEventsInFixedUpdate;
     public void EnableGameplayInput() => SwitchActionMap(_inputController.Gameplay, false);
     
     private void SwitchActionMap(InputActionMap actionMap, bool isUIInput)

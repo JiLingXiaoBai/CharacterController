@@ -1,19 +1,20 @@
+using System;
 using JLXB.Framework.Timer;
 using UnityEngine;
 
 public class CameraController : MonoBehaviour
 {
     public Transform cameraTarget;
-    
-    private void Start()
+
+    private void Awake()
     {
         CameraMgr.Instance.Init(cameraTarget.rotation.eulerAngles);
     }
-    
+
     private void LateUpdate()
     {
         var cameraLook = InputMgr.Instance.CameraLook;
-        var cameraRotation = CameraMgr.Instance.CameraRotationViaInput(cameraLook);
+        var cameraRotation = CameraMgr.Instance.CameraRotateViaInput(cameraLook);
         cameraTarget.rotation = cameraRotation;
     }
 }

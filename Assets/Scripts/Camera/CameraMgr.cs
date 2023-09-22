@@ -16,13 +16,13 @@ public class CameraMgr : Singleton<CameraMgr>
     {
     }
 
-    public void Init(Vector3 cameraEulerAngles)
+    public void Init(Vector3 targetAngles)
     {
-        _cameraTargetPitch = cameraEulerAngles.x;
-        _cameraTargetYaw = cameraEulerAngles.y;
+        _cameraTargetYaw = targetAngles.y;
+        _cameraTargetPitch = targetAngles.x;
     }
-
-    public Quaternion CameraRotationViaInput(Vector2 cameraLook)
+    
+    public Quaternion CameraRotateViaInput(Vector2 cameraLook)
     {
         if (cameraLook.sqrMagnitude >= CameraThreshold)
         {
