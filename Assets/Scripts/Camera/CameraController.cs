@@ -1,5 +1,3 @@
-using System;
-using JLXB.Framework.Timer;
 using UnityEngine;
 
 public class CameraController : MonoBehaviour
