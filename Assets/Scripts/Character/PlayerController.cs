@@ -56,6 +56,15 @@ public class PlayerController : MonoBehaviour, ICharacterController
 
     public void PostGroundingUpdate(float deltaTime)
     {
+        switch (_motor.GroundingStatus.IsStableOnGround)
+        {
+            case true when !_motor.LastGroundingStatus.IsStableOnGround:
+                //OnLanded();
+                break;
+            case false when _motor.LastGroundingStatus.IsStableOnGround:
+                //OnLeaveStableGround();
+                break;
+        }
     }
 
     public void AfterCharacterUpdate(float deltaTime)
