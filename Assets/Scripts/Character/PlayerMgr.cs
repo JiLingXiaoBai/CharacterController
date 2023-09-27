@@ -53,7 +53,7 @@ public class PlayerMgr : Singleton<PlayerMgr>
 
     public (bool, Quaternion) GetUpdateRotation(Vector3 characterForward, Vector3 characterUp, float deltaTime)
     {
-        if (!(_lookInputVector.sqrMagnitude > 0f) || !(OrientationSharpness > 0f)) return (false, Quaternion.identity);
+        if (!(_lookInputVector.sqrMagnitude > 0f) || !(OrientationSharpness > 0f)) return (false, default);
         var smoothedLookInputDirection = Vector3.Slerp(characterForward, _lookInputVector,
             1 - Mathf.Exp(-OrientationSharpness * deltaTime)).normalized;
         return (true, Quaternion.LookRotation(smoothedLookInputDirection, characterUp));
