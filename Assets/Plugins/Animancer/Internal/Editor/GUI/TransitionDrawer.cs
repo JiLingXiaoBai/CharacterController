@@ -162,6 +162,12 @@ namespace Animancer.Editor
         {
             if (_Mode == Mode.Uninitialized)
             {
+                if (property.depth > 0)
+                {
+                    _Mode = Mode.Normal;
+                    return;
+                }
+
                 _Mode = Mode.AlwaysExpanded;
 
                 var iterator = property.serializedObject.GetIterator();

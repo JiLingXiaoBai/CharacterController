@@ -63,7 +63,9 @@ namespace Animancer
         /************************************************************************************************************************/
 
         [SerializeField]
-        [AnimationSpeed]
+#if UNITY_EDITOR
+        [AnimationSpeed(IsOptional = false)]
+#endif
         [DefaultValue(1f, -1f)]
         private float[] _Speeds;
 

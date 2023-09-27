@@ -292,7 +292,7 @@ namespace Animancer
         {
             fadeDuration = ControllerState.GetFadeDuration(fadeDuration);
 
-            if (States.TryGet(name, out var state))
+            if (States.TryGet(stateName, out var state))
             {
                 Play(state, fadeDuration);
 
@@ -339,7 +339,7 @@ namespace Animancer
         {
             fadeDuration = ControllerState.GetFadeDuration(fadeDuration);
 
-            if (States.TryGet(name, out var state))
+            if (States.TryGet(stateName, out var state))
             {
                 Play(state, fadeDuration);
 
@@ -382,7 +382,7 @@ namespace Animancer
             int layer = -1,
             float normalizedTime = float.NegativeInfinity)
         {
-            if (States.TryGet(name, out var state))
+            if (States.TryGet(stateName, out var state))
             {
                 Play(state);
 
@@ -422,7 +422,7 @@ namespace Animancer
             int layer = -1,
             float fixedTime = 0)
         {
-            if (States.TryGet(name, out var state))
+            if (States.TryGet(stateName, out var state))
             {
                 Play(state);
 
@@ -471,7 +471,7 @@ namespace Animancer
 
         /// <summary>Sets the value of the specified float parameter with smoothing.</summary>
         public float SetFloat(int id, float value, float dampTime, float deltaTime, float maxSpeed = float.PositiveInfinity)
-            => _Controller.State.SetFloat(name, value, dampTime, deltaTime, maxSpeed);
+            => _Controller.State.SetFloat(id, value, dampTime, deltaTime, maxSpeed);
 
         /// <summary>Gets the value of the specified integer parameter.</summary>
         public int GetInteger(int id) => ControllerPlayable.GetInteger(id);

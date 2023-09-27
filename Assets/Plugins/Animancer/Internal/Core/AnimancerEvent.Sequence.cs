@@ -715,6 +715,21 @@ namespace Animancer
             /// <seealso cref="IndexOfRequired(string, int)"/>
             /// <seealso cref="OptionalWarning.DuplicateEvent"/>
             public void AddCallback(string name, Action callback) => AddCallback(IndexOfRequired(name), callback);
+            
+            public int AddCallbacks(string name, Action callback)
+            {
+                var count = 0;
+                var index = -1;
+                while (true)
+                {
+                    index = IndexOf(name, index + 1);
+                    if (index < 0)
+                        return count;
+
+                    count++;
+                    AddCallback(index, callback);
+                }
+            }
 
             /************************************************************************************************************************/
 

@@ -240,6 +240,8 @@ namespace Animancer
 
                     _Events = value;
                     _NextEventIndex = RecalculateEventIndex;
+                    if (_State != null)
+                        _PreviousTime = _State.NormalizedTime;
                 }
             }
 
