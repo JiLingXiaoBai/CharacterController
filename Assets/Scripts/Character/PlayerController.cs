@@ -1,3 +1,4 @@
+using System;
 using KinematicCharacterController;
 using UnityEngine;
 
@@ -20,6 +21,11 @@ public class PlayerController : MonoBehaviour, ICharacterController
     }
 
     private void LateUpdate()
+    {
+        PlayerMgr.Instance.UpdateState();
+    }
+
+    private void FixedUpdate()
     {
         var capsuleDimensions = PlayerMgr.Instance.UpdateAnimation();
         _motor.SetCapsuleDimensions(capsuleDimensions[0], capsuleDimensions[1], capsuleDimensions[2]);
