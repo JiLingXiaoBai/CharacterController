@@ -1,5 +1,4 @@
 using JLXB.Framework;
-using JLXB.Framework.FSM;
 using UnityEngine;
 
 public class PlayerMgr : Singleton<PlayerMgr>
@@ -23,29 +22,9 @@ public class PlayerMgr : Singleton<PlayerMgr>
     private static readonly float[] NormalCapsuleDimensions = { 0.3f, 1.82f, 0.91f };
     private static readonly float[] CrouchCapsuleDimensions = { 0.5f, 1.2f, 0.6f };
 
-    private HybridStateMachine<PlayerSuperState, string> _playerStateMachine;
-    private HybridStateMachine<PlayerSuperState, PlayerGroundState, string> _groundStateMachine;
-    private HybridStateMachine<PlayerSuperState, PlayerAirState, string> _airStateMachine;
-
-    public enum PlayerSuperState
-    {
-        OnGround,
-        InAir,
-    }
-
-    public enum PlayerGroundState
-    {
-        Locomotion,
-        Crouch,
-    }
-
-    public enum PlayerAirState
-    {
-        Jump,
-        Falling,
-        Land
-    }
-
+    private PlayerStateMachine _playerStateMachine;
+    
+    
     private PlayerMgr()
     {
     }
@@ -53,10 +32,7 @@ public class PlayerMgr : Singleton<PlayerMgr>
     public void Init(Transform cameraTrans)
     {
         _cameraTrans = cameraTrans;
-        _playerStateMachine = new HybridStateMachine<PlayerSuperState, string>();
-        _playerStateMachine.AddState(PlayerSuperState.OnGround, _groundStateMachine);
-        _playerStateMachine.AddState(PlayerSuperState.InAir, _airStateMachine);
-        // _playerStateMachine.Init();
+        //_playerStateMachine = new PlayerStateMachine();
     }
 
     public void UpdateInput(Vector2 inputMovement, Vector3 planeNormal)
@@ -81,7 +57,7 @@ public class PlayerMgr : Singleton<PlayerMgr>
 
     public void UpdateState()
     {
-        
+        //_playerStateMachine.OnLogic();
     }
 
     public (bool, Quaternion) GetUpdateRotation(Vector3 characterForward, Vector3 characterUp, float deltaTime)

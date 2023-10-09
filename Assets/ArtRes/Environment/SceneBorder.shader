@@ -1,4 +1,4 @@
-Shader "Unlit/Wall"
+Shader "Unlit/SceneBorder"
 {
     Properties
     {
