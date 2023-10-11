@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -11,11 +10,12 @@ public class CameraController : MonoBehaviour
     private RaycastHit[] _obstacleHits;
     private RaycastHit _playerHit;
     private Dictionary<MeshRenderer, DitherObj> _ditherObjs;
+    private List<MeshRenderer> _removeDitherKeys;
     private class DitherObj
     {
-        public Material[] Materials;
+        public readonly Material[] Materials;
         public bool Flag;
-        public DitherObj(MeshRenderer renderer, bool flag)
+        public DitherObj(Renderer renderer, bool flag)
         {
             Materials = new Material[renderer.materials.Length];
             for (var i = 0; i < renderer.materials.Length; i++)
@@ -28,6 +28,9 @@ public class CameraController : MonoBehaviour
 
     private void Awake()
     {
+        _ditherObjs = new Dictionary<MeshRenderer, DitherObj>();
+        _removeDitherKeys = new List<MeshRenderer>();
+        _obstacleHits = new RaycastHit[32];
         CameraMgr.Instance.Init(cameraTarget.rotation.eulerAngles);
     }
 
@@ -37,9 +40,14 @@ public class CameraController : MonoBehaviour
         var cameraRotation = CameraMgr.Instance.CameraRotateViaInput(cameraLook);
         cameraTarget.rotation = cameraRotation;
     }
-    
-    
-    private void UpdateRaycastHit()
+
+    private void FixedUpdate()
+    {
+        UpdateDitherObstacles();
+    }
+
+
+    private void UpdateDitherObstacles()
     {
         var cameraPos = transform.position;
         var targetPos = cameraTarget.position;
@@ -54,45 +62,46 @@ public class CameraController : MonoBehaviour
         if (!_playerHit.transform.CompareTag("Player"))
         {
             var distance = Vector3.Distance(cameraPos, targetPos);
-            Physics.RaycastNonAlloc(cameraPos, viewDir, _obstacleHits, distance, obstacleLayer);
-            foreach (var hit in _obstacleHits.Where(hit => !hit.transform.CompareTag("Player")))
+            var hitCount = Physics.RaycastNonAlloc(cameraPos, viewDir, _obstacleHits, distance, obstacleLayer);
+            for (var i = 0; i < hitCount; i++)
             {
-                var renderers = hit.transform.GetComponentsInChildren<MeshRenderer>();
-                foreach (var renderer in renderers)
+                if (_obstacleHits[i].transform.CompareTag("Player"))
                 {
-                    if (!_ditherObjs.ContainsKey(renderer))
+                    continue;
+                }
+                var renderers = _obstacleHits[i].transform.GetComponentsInChildren<MeshRenderer>();
+                foreach (var meshRenderer in renderers)
+                {
+                    if (!_ditherObjs.ContainsKey(meshRenderer))
                     {
-                        var ditherObj = new DitherObj(renderer, true);
-                        _ditherObjs.Add(renderer, ditherObj);
+                        var ditherObj = new DitherObj(meshRenderer, true);
+                        _ditherObjs.Add(meshRenderer, ditherObj);
                         
-                        var tempMaterials = new Material[renderer.materials.Length];
-                        for (var i = 0; i < renderer.materials.Length; i++)
+                        var tempMaterials = new Material[meshRenderer.materials.Length];
+                        for (var j = 0; j < meshRenderer.materials.Length; j++)
                         {
-                            tempMaterials[i] = ditherMaterial;
+                            tempMaterials[j] = ditherMaterial;
                         }
-                        renderer.materials = tempMaterials;
+                        meshRenderer.materials = tempMaterials;
                     }
                     else
                     {
-                        _ditherObjs[renderer].Flag = true;
+                        _ditherObjs[meshRenderer].Flag = true;
                     }
                 }
             }
         }
-
-        var removeDitherObjs = new List<MeshRenderer>();
+        
         foreach (var ditherObj in _ditherObjs.Where(ditherObj => ditherObj.Value.Flag == false))
         {
             ditherObj.Key.materials = ditherObj.Value.Materials;
-            removeDitherObjs.Add(ditherObj.Key);
+            _removeDitherKeys.Add(ditherObj.Key);
         }
-
-        foreach (var removeDitherObj in removeDitherObjs)
+        foreach (var removeDitherObj in _removeDitherKeys)
         {
             _ditherObjs.Remove(removeDitherObj);
         }
-        
+        _removeDitherKeys.Clear();
     }
-
     
 }
