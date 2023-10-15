@@ -1,10 +1,16 @@
 using KinematicCharacterController;
 using UnityEngine;
-
+using JLXB.Framework.EventCenter;
 [RequireComponent(typeof(KinematicCharacterMotor))]
 public class PlayerController : MonoBehaviour, ICharacterController
 {
     private KinematicCharacterMotor _motor;
+
+    private void Awake()
+    {
+        EventCenter.Register<float, float, float>(EventConst.Player_SetCapsuleDimensions,
+            (radius, height, yOffset) => _motor.SetCapsuleDimensions(radius, height, yOffset));
+    }
 
     private void Start()
     {
@@ -19,16 +25,12 @@ public class PlayerController : MonoBehaviour, ICharacterController
         PlayerMgr.Instance.UpdateInput(InputMgr.Instance.Movement, _motor.CharacterUp);
     }
 
-    private void LateUpdate()
-    {
-        PlayerMgr.Instance.UpdateState();
-    }
-
     private void FixedUpdate()
     {
-        var capsuleDimensions = PlayerMgr.Instance.UpdateAnimation();
-        _motor.SetCapsuleDimensions(capsuleDimensions[0], capsuleDimensions[1], capsuleDimensions[2]);
+        PlayerMgr.Instance.UpdateAnimation();
     }
+    
+    
 
     /// <summary>
     /// 能且仅能在此处控制角色转向

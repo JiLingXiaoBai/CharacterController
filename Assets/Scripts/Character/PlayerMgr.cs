@@ -17,10 +17,11 @@ public class PlayerMgr : Singleton<PlayerMgr>
 
     //转向敏锐度
     private const float OrientationSharpness = 10f;
+    
 
-    private static readonly Vector3 Gravity = new(0, -30f, 0);
-    private static readonly float[] NormalCapsuleDimensions = { 0.3f, 1.82f, 0.91f };
-    private static readonly float[] CrouchCapsuleDimensions = { 0.5f, 1.2f, 0.6f };
+    public static readonly Vector3 Gravity = new(0, -30f, 0);
+    public static readonly float[] NormalCapsuleDimensions = { 0.3f, 1.82f, 0.91f };
+    public static readonly float[] CrouchCapsuleDimensions = { 0.5f, 1.2f, 0.6f };
 
     private PlayerStateMachine _playerStateMachine;
     
@@ -49,15 +50,11 @@ public class PlayerMgr : Singleton<PlayerMgr>
         _lookInputVector = _moveInputVector.normalized;
     }
 
-    public float[] UpdateAnimation()
+    public void UpdateAnimation()
     {
         var movement = _moveInputVector.magnitude;
-        return NormalCapsuleDimensions;
-    }
-
-    public void UpdateState()
-    {
         //_playerStateMachine.OnLogic();
+        
     }
 
     public (bool, Quaternion) GetUpdateRotation(Vector3 characterForward, Vector3 characterUp, float deltaTime)
