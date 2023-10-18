@@ -1,6 +1,8 @@
 using KinematicCharacterController;
 using UnityEngine;
 using JLXB.Framework.EventCenter;
+using ARPG.Input;
+
 [RequireComponent(typeof(KinematicCharacterMotor))]
 public class PlayerMovementController : MonoBehaviour, ICharacterController
 {

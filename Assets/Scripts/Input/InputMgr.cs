@@ -2,36 +2,39 @@ using JLXB.Framework;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class InputMgr : Singleton<InputMgr>
+namespace ARPG.Input
 {
-    private readonly InputController _inputController;
-
-    private InputMgr()
+    public class InputMgr : Singleton<InputMgr>
     {
-        _inputController = new InputController();
-    }
-    
-    public Vector2 Movement => _inputController.Gameplay.Movement.ReadValue<Vector2>();
-    public bool Jump => _inputController.Gameplay.Jump.WasPressedThisFrame();
-    public bool StopJump => _inputController.Gameplay.Jump.WasReleasedThisFrame();
-    public Vector2 CameraLook => _inputController.Gameplay.CameraLook.ReadValue<Vector2>();
-    
-    public void EnableGameplayInput() => SwitchActionMap(_inputController.Gameplay, false);
-    
-    private void SwitchActionMap(InputActionMap actionMap, bool isUIInput)
-    {
-        _inputController.Disable();
-        actionMap.Enable();
+        private readonly InputController _inputController;
 
-        if (isUIInput)
+        private InputMgr()
         {
-            Cursor.visible = true;
-            Cursor.lockState = CursorLockMode.None;
+            _inputController = new InputController();
         }
-        else
+
+        public Vector2 Movement => _inputController.Gameplay.Movement.ReadValue<Vector2>();
+        public bool Jump => _inputController.Gameplay.Jump.WasPressedThisFrame();
+        public bool StopJump => _inputController.Gameplay.Jump.WasReleasedThisFrame();
+        public Vector2 CameraLook => _inputController.Gameplay.CameraLook.ReadValue<Vector2>();
+
+        public void EnableGameplayInput() => SwitchActionMap(_inputController.Gameplay, false);
+
+        private void SwitchActionMap(InputActionMap actionMap, bool isUIInput)
         {
-            Cursor.visible = false;
-            Cursor.lockState = CursorLockMode.Locked;
+            _inputController.Disable();
+            actionMap.Enable();
+
+            if (isUIInput)
+            {
+                Cursor.visible = true;
+                Cursor.lockState = CursorLockMode.None;
+            }
+            else
+            {
+                Cursor.visible = false;
+                Cursor.lockState = CursorLockMode.Locked;
+            }
         }
     }
 }

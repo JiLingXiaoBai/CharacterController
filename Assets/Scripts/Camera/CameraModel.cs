@@ -1,4 +1,8 @@
-public class CameraModel
+
+namespace ARPG.Camera
 {
+    public class CameraModel
+    {
     
+    }
 }
