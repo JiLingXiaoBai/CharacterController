@@ -5,6 +5,7 @@ using ARPG.Input;
 
 namespace ARPG.Camera
 {
+    // todo 加入锁定逻辑，并使用QFramework重构
     public class CameraController : MonoBehaviour
     {
         private const float TopClamp = 70.0f;
