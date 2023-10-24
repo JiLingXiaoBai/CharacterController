@@ -1,7 +1,7 @@
 using ARPG.Camera;
 using QFramework;
 
-public class ARPGCharacter : Architecture<ARPGCharacter>
+public class CharacterArchitecture : Architecture<CharacterArchitecture>
 {
     protected override void Init()
     {

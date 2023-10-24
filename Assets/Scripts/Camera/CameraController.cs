@@ -1,151 +1,70 @@
-using System.Collections.Generic;
-using System.Linq;
+using System;
+using Cinemachine;
+using QFramework;
 using UnityEngine;
-using ARPG.Input;
+using JLXB.Framework.FSM;
 
 namespace ARPG.Camera
 {
-    // todo 加入锁定逻辑，并使用QFramework重构
-    public class CameraController : MonoBehaviour
+    public enum CameraState
     {
-        private const float TopClamp = 70.0f;
-        private const float BottomClamp = -30.0f;
-        private const float Sensitivity = 0.12f;
+        Follow,
+        LockOn,
+        CloseUp,
+    }
 
-        private const float CameraThreshold = 0.01f;
+    public class CameraController : MonoBehaviour, IController
+    {
+        [SerializeField] private Transform followCameraTarget;
+        [SerializeField] private Transform lockOnCameraTarget;
+        [SerializeField] private Transform closeUpCameraTarget;
 
-        // 俯仰角
-        private float _cameraTargetPitch;
+        [SerializeField] private CinemachineVirtualCamera followCamera;
 
-        // 偏航角
-        private float _cameraTargetYaw;
+        [SerializeField] private CinemachineVirtualCamera lockOnCamera;
 
+        [SerializeField] private CinemachineVirtualCamera closeUpCamera;
 
-        public Transform cameraTarget;
-        public LayerMask obstacleLayer;
-        public Material ditherMaterial;
-        private RaycastHit[] _obstacleHits;
-        private RaycastHit _playerHit;
-        private Dictionary<MeshRenderer, DitherObj> _ditherObjs;
-        private List<MeshRenderer> _removeDitherKeys;
-
-        private class DitherObj
+        public IArchitecture GetArchitecture()
         {
-            public readonly Material[] Materials;
-            public bool Flag;
-
-            public DitherObj(Renderer renderer, bool flag)
-            {
-                Materials = new Material[renderer.materials.Length];
-                for (var i = 0; i < renderer.materials.Length; i++)
-                {
-                    Materials[i] = renderer.materials[i];
-                }
-
-                Flag = flag;
-            }
+            return CharacterArchitecture.Interface;
         }
 
-        private void Awake()
-        {
-            _ditherObjs = new Dictionary<MeshRenderer, DitherObj>();
-            _removeDitherKeys = new List<MeshRenderer>();
-            _obstacleHits = new RaycastHit[32];
+        private StateMachine<CameraState, string> _cameraStateMachine;
+        private bool _isLockOn;
+        private bool _isClosingUp;
 
-            var targetEulerAngles = cameraTarget.rotation.eulerAngles;
-            _cameraTargetYaw = targetEulerAngles.y;
-            _cameraTargetPitch = targetEulerAngles.x;
+        private void Start()
+        {
+            _cameraStateMachine = new StateMachine<CameraState, string>();
+            _cameraStateMachine.AddState(CameraState.Follow, onEnter: state => { Debug.Log("Follow"); });
+            _cameraStateMachine.AddState(CameraState.LockOn, onEnter: state => { Debug.Log("LockOn"); });
+            _cameraStateMachine.AddState(CameraState.CloseUp, onEnter: state => { Debug.Log("CloseUp"); });
+            _cameraStateMachine.SetStartState(CameraState.Follow);
+            _cameraStateMachine.AddTwoWayTransition(CameraState.Follow, CameraState.LockOn, t => _isLockOn);
+            _cameraStateMachine.AddTransition(CameraState.Follow, CameraState.CloseUp, t => !_isLockOn && _isClosingUp);
+            _cameraStateMachine.AddTransition(CameraState.LockOn, CameraState.CloseUp, t => _isLockOn && _isClosingUp);
+            _cameraStateMachine.AddTransition(CameraState.CloseUp, CameraState.Follow, t => !_isLockOn && !_isClosingUp);
+            _cameraStateMachine.AddTransition(CameraState.CloseUp, CameraState.LockOn, t => _isLockOn && !_isClosingUp);
+            _cameraStateMachine.Init();
         }
 
-        private void LateUpdate()
+        private void Update()
         {
-            var cameraLook = InputMgr.Instance.CameraLook;
-
-            if (cameraLook.sqrMagnitude >= CameraThreshold)
+            _cameraStateMachine.OnLogic();
+            if (UnityEngine.Input.GetKeyDown(KeyCode.L))
             {
-                _cameraTargetPitch -= cameraLook.y * Sensitivity;
-                _cameraTargetYaw += cameraLook.x * Sensitivity;
+                _isLockOn = !_isLockOn;
             }
 
-            _cameraTargetPitch = ClampAngle(_cameraTargetPitch, BottomClamp, TopClamp);
-            _cameraTargetYaw = ClampAngle(_cameraTargetYaw, float.MinValue, float.MaxValue);
-            cameraTarget.rotation = Quaternion.Euler(_cameraTargetPitch, _cameraTargetYaw, 0f);
-
+            if (UnityEngine.Input.GetKeyDown(KeyCode.C))
+            {
+                _isClosingUp = true;
+            }
+            else
+            {
+                _isClosingUp = false;
+            }
         }
-
-        private void FixedUpdate()
-        {
-            UpdateDitherObstacles();
-        }
-
-        private static float ClampAngle(float angle, float min, float max)
-        {
-            if (angle < -360f) angle += 360f;
-            if (angle > 360f) angle -= 360f;
-            return Mathf.Clamp(angle, min, max);
-        }
-
-
-        private void UpdateDitherObstacles()
-        {
-            var cameraPos = transform.position;
-            var targetPos = cameraTarget.position;
-            var viewDir = (targetPos - cameraPos).normalized;
-
-            foreach (var ditherObj in _ditherObjs)
-            {
-                ditherObj.Value.Flag = false;
-            }
-
-            if (!Physics.Raycast(cameraPos, viewDir, out _playerHit)) return;
-            if (!_playerHit.transform.CompareTag("Player"))
-            {
-                var distance = Vector3.Distance(cameraPos, targetPos);
-                var hitCount = Physics.RaycastNonAlloc(cameraPos, viewDir, _obstacleHits, distance, obstacleLayer);
-                for (var i = 0; i < hitCount; i++)
-                {
-                    if (_obstacleHits[i].transform.CompareTag("Player"))
-                    {
-                        continue;
-                    }
-
-                    var renderers = _obstacleHits[i].transform.GetComponentsInChildren<MeshRenderer>();
-                    foreach (var meshRenderer in renderers)
-                    {
-                        if (!_ditherObjs.ContainsKey(meshRenderer))
-                        {
-                            var ditherObj = new DitherObj(meshRenderer, true);
-                            _ditherObjs.Add(meshRenderer, ditherObj);
-
-                            var tempMaterials = new Material[meshRenderer.materials.Length];
-                            for (var j = 0; j < meshRenderer.materials.Length; j++)
-                            {
-                                tempMaterials[j] = ditherMaterial;
-                            }
-
-                            meshRenderer.materials = tempMaterials;
-                        }
-                        else
-                        {
-                            _ditherObjs[meshRenderer].Flag = true;
-                        }
-                    }
-                }
-            }
-
-            foreach (var ditherObj in _ditherObjs.Where(ditherObj => ditherObj.Value.Flag == false))
-            {
-                ditherObj.Key.materials = ditherObj.Value.Materials;
-                _removeDitherKeys.Add(ditherObj.Key);
-            }
-
-            foreach (var removeDitherObj in _removeDitherKeys)
-            {
-                _ditherObjs.Remove(removeDitherObj);
-            }
-
-            _removeDitherKeys.Clear();
-        }
-
     }
 }
