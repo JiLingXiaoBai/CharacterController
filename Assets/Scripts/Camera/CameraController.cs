@@ -1,4 +1,3 @@
-using System;
 using Cinemachine;
 using QFramework;
 using UnityEngine;
@@ -52,19 +51,6 @@ namespace ARPG.Camera
         private void Update()
         {
             _cameraStateMachine.OnLogic();
-            if (UnityEngine.Input.GetKeyDown(KeyCode.L))
-            {
-                _isLockOn = !_isLockOn;
-            }
-
-            if (UnityEngine.Input.GetKeyDown(KeyCode.C))
-            {
-                _isClosingUp = true;
-            }
-            else
-            {
-                _isClosingUp = false;
-            }
         }
     }
 }

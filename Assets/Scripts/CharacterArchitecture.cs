@@ -1,4 +1,5 @@
 using ARPG.Camera;
+using ARPG.Character.Player;
 using QFramework;
 
 public class CharacterArchitecture : Architecture<CharacterArchitecture>
@@ -7,6 +8,7 @@ public class CharacterArchitecture : Architecture<CharacterArchitecture>
     {
         #region Register Model
         RegisterModel<ICameraModel>(new CameraModel());
+        RegisterModel<IPlayerModel>(new PlayerModel());
         #endregion
         
         #region Register System
