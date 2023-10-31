@@ -1,3 +1,4 @@
+using System;
 using Cinemachine;
 using QFramework;
 using UnityEngine;
@@ -37,9 +38,9 @@ namespace ARPG.Camera
         {
             _model = this.GetModel<ICameraModel>();
             _cameraStateMachine = new StateMachine<CameraState, string>();
-            _cameraStateMachine.AddState(CameraState.Follow, onEnter: state => { Debug.Log("Follow"); });
-            _cameraStateMachine.AddState(CameraState.LockOn, onEnter: state => { Debug.Log("LockOn"); });
-            _cameraStateMachine.AddState(CameraState.CloseUp, onEnter: state => { Debug.Log("CloseUp"); });
+            _cameraStateMachine.AddState(CameraState.Follow, onEnter: state => { SwitchCameraState(CameraState.Follow); });
+            _cameraStateMachine.AddState(CameraState.LockOn, onEnter: state => { SwitchCameraState(CameraState.LockOn); });
+            _cameraStateMachine.AddState(CameraState.CloseUp, onEnter: state => { SwitchCameraState(CameraState.CloseUp); });
             _cameraStateMachine.SetStartState(CameraState.Follow);
             _cameraStateMachine.AddTwoWayTriggerTransition("CameraStateChange", CameraState.Follow, CameraState.LockOn, t => _model.IsLockOn.Value);
             _cameraStateMachine.AddTriggerTransition("CameraStateChange",CameraState.Follow, CameraState.CloseUp, t => !_model.IsLockOn.Value && _model.IsClosingUp.Value);
@@ -61,10 +62,16 @@ namespace ARPG.Camera
             
         }
 
+        private void SwitchCameraState(CameraState state)
+        {
+            followCamera.gameObject.SetActive(state == CameraState.Follow);
+            lockOnCamera.gameObject.SetActive(state == CameraState.LockOn);
+            closeUpCamera.gameObject.SetActive(state == CameraState.CloseUp);
+        }
+
         private void Update()
         {
             _cameraStateMachine.OnLogic();
-            
         }
     }
 }
