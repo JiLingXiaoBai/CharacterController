@@ -1,0 +1,10 @@
+using XBToolKit.Config;
+
+public sealed class $ConfigDataTable$ : ConfigDataTable<$TKey$, $ConfigDataTable$.ConfigData>
+{
+    [System.Serializable]
+    public class ConfigData : ConfigDataBase
+    {
+$Content$
+    }
+}

@@ -1,6 +1,6 @@
 using KinematicCharacterController;
 using UnityEngine;
-using JLXB.Framework.EventCenter;
+using XBToolKit.EventCenter;
 using ARPG.Input;
 
 namespace ARPG.Character.Player
