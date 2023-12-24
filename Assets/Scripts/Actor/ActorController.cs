@@ -3,10 +3,10 @@ using UnityEngine;
 using XBToolKit.EventCenter;
 using ARPG.Input;
 
-namespace ARPG.Character.Player
+namespace ARPG.Actor
 {
     [RequireComponent(typeof(KinematicCharacterMotor))]
-    public class PlayerMovementController : MonoBehaviour, ICharacterController
+    public class ActorController : MonoBehaviour, ICharacterController
     {
         private Transform _cameraTrans;
         private Vector3 _moveInputVector;

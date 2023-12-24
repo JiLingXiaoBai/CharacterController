@@ -1,6 +1,6 @@
 using UnityHFSM;
 
-namespace ARPG.Character.Player
+namespace ARPG.Actor.Player
 {
     public class UnarmedJumpState : StateBase<PlayerStateConst.UnarmedJump>
     {

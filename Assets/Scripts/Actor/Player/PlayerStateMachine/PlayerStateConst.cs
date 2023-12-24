@@ -1,4 +1,4 @@
-namespace ARPG.Character.Player
+namespace ARPG.Actor.Player
 {
     public static class PlayerStateConst
     {

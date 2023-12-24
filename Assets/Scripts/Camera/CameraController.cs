@@ -1,6 +1,5 @@
 using ARPG.Input;
 using Cinemachine;
-using QFramework;
 using UnityEngine;
 using UnityHFSM;
 namespace ARPG.Camera
@@ -12,7 +11,7 @@ namespace ARPG.Camera
         CloseUp,
     }
 
-    public class CameraController : MonoBehaviour, IController
+    public class CameraController : MonoBehaviour
     {
         private const float TopClamp = 70.0f;
         private const float BottomClamp = -30.0f;
@@ -26,19 +25,37 @@ namespace ARPG.Camera
         // 偏航角
         private float _cameraTargetYaw;
 
+        private bool _isLockOn;
+
+        private bool _isClosingUp;
+        public bool IsLockOn
+        {
+            get => _isLockOn;
+            set
+            {
+                if (_isLockOn == value) return;
+                _isLockOn = value;
+                _cameraStateMachine.Trigger("CameraStateChange");
+            }
+        }
+
+        public bool IsClosingUp
+        {
+            get => _isClosingUp;
+            set
+            {
+                if (_isClosingUp == value) return;
+                _isClosingUp = value;
+                _cameraStateMachine.Trigger("CameraStateChange");
+            }
+        }
+
 
         [SerializeField] private CinemachineVirtualCamera followCamera;
 
         [SerializeField] private CinemachineVirtualCamera lockOnCamera;
 
         [SerializeField] private CinemachineVirtualCamera closeUpCamera;
-
-        public IArchitecture GetArchitecture()
-        {
-            return CharacterArchitecture.Interface;
-        }
-
-        private ICameraModel _model;
 
         private StateMachine<CameraState, string> _cameraStateMachine;
 
@@ -51,7 +68,6 @@ namespace ARPG.Camera
 
         private void Start()
         {
-            _model = this.GetModel<ICameraModel>();
             _cameraStateMachine = new StateMachine<CameraState, string>();
             _cameraStateMachine.AddState(CameraState.Follow,
                 onEnter: state => { SwitchCameraState(CameraState.Follow); },
@@ -62,21 +78,16 @@ namespace ARPG.Camera
                 onEnter: state => { SwitchCameraState(CameraState.CloseUp); });
             _cameraStateMachine.SetStartState(CameraState.Follow);
             _cameraStateMachine.AddTwoWayTriggerTransition("CameraStateChange", CameraState.Follow, CameraState.LockOn,
-                t => _model.IsLockOn.Value);
+                t => _isLockOn);
             _cameraStateMachine.AddTriggerTransition("CameraStateChange", CameraState.Follow, CameraState.CloseUp,
-                t => !_model.IsLockOn.Value && _model.IsClosingUp.Value);
+                t => !_isLockOn && _isClosingUp);
             _cameraStateMachine.AddTriggerTransition("CameraStateChange", CameraState.LockOn, CameraState.CloseUp,
-                t => _model.IsLockOn.Value && _model.IsClosingUp.Value);
+                t => _isLockOn && _isClosingUp);
             _cameraStateMachine.AddTriggerTransition("CameraStateChange", CameraState.CloseUp, CameraState.Follow,
-                t => !_model.IsLockOn.Value && !_model.IsClosingUp.Value);
+                t => !_isLockOn && !_isClosingUp);
             _cameraStateMachine.AddTriggerTransition("CameraStateChange", CameraState.CloseUp, CameraState.LockOn,
-                t => _model.IsLockOn.Value && !_model.IsClosingUp.Value);
+                t => _isLockOn && !_isClosingUp);
             _cameraStateMachine.Init();
-
-            _model.IsLockOn.RegisterWithInitValue(newCount => { _cameraStateMachine.Trigger("CameraStateChange"); })
-                .UnRegisterWhenGameObjectDestroyed(gameObject);
-            _model.IsClosingUp.RegisterWithInitValue(newCount => { _cameraStateMachine.Trigger("CameraStateChange"); })
-                .UnRegisterWhenGameObjectDestroyed(gameObject);
         }
 
         private void SwitchCameraState(CameraState state)
