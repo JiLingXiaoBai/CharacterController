@@ -1,6 +1,5 @@
 using KinematicCharacterController;
 using UnityEngine;
-using XBToolKit.EventCenter;
 using ARPG.Input;
 
 namespace ARPG.Actor
@@ -31,8 +30,6 @@ namespace ARPG.Actor
 
         private void Awake()
         {
-            EventCenter.Register<float, float, float>(EventConst.PlayerSetCapsuleDimensions,
-                (radius, height, yOffset) => _motor.SetCapsuleDimensions(radius, height, yOffset));
         }
 
         private void Start()
@@ -150,6 +147,11 @@ namespace ARPG.Actor
         private static float GetMaxStableMoveSpeed()
         {
             return MaxStableRunSpeed;
+        }
+
+        public void SetCapsuleDimensions(float radius, float height, float yOffset)
+        {
+            _motor.SetCapsuleDimensions(radius, height, yOffset);
         }
     }
 }
