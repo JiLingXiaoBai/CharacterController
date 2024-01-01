@@ -10,18 +10,20 @@ namespace ARPG.Actor.Player
         [SerializeField] private GameObject cameraHandle;
         [SerializeField] private GameObject modelHandle;
         [SerializeField] private Transform lockRoot;
-        public Actor Actor { get; private set; }
+        public Actor ActorObject { get; private set; }
         public Transform LockRoot => lockRoot;
-        
+        public Transform ActorTrans { get; private set; }
+
         private void Awake()
         {
-            Actor = new Actor();
-            Actor.RegisterModel<IInputModel>(new PlayerInputModel());
-            Actor.RegisterModel<ICameraModel>(new CameraModel());
+            ActorTrans = transform;
+            ActorObject = new Actor();
+            ActorObject.RegisterModel<IInputModel>(new PlayerInputModel());
+            ActorObject.RegisterModel<ICameraModel>(new CameraModel());
             
-            Actor.BindController<CameraController>(cameraHandle);
-            Actor.BindController<MovementController>(modelHandle);
-            Actor.Init();
+            ActorObject.BindController<CameraController>(cameraHandle);
+            ActorObject.BindController<MovementController>(modelHandle);
+            ActorObject.Init();
         }
     }
 }

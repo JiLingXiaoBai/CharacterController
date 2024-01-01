@@ -12,7 +12,8 @@ namespace ARPG.Actor
 
     public interface IActorHandle
     {
-        public Actor Actor { get; }
+        public Actor ActorObject { get; }
         public Transform LockRoot { get; }
+        public Transform ActorTrans { get; }
     }
 }
