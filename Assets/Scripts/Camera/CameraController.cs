@@ -35,6 +35,7 @@ namespace ARPG.Camera
         private StateMachine<CameraState, string> _cameraStateMachine;
         private Collider[] _possibleTargets;
         private UnityEngine.Camera _camera;
+        private Vector2 _cameraLook;
 
         private void Awake()
         {
@@ -87,6 +88,7 @@ namespace ARPG.Camera
         {
             var inputModel = this.GetModel<IInputModel>();
             var cameraModel = this.GetModel<ICameraModel>();
+            _cameraLook = inputModel.CameraLook;
             if (inputModel.LockOn)
             {
                 if (cameraModel.IsLockOn.Value == false)
@@ -99,10 +101,17 @@ namespace ARPG.Camera
                     cameraModel.IsLockOn.Value = false;
                 }
             }
-            // if (cameraModel.IsLockOn.Value)
-            // {
-            //     
-            // }
+
+            if (cameraModel.IsLockOn.Value)
+            {
+                switch (_cameraLook.x)
+                {
+                    case < 0:
+                        break;
+                    case > 0:
+                        break;
+                }
+            }
         }
 
         private void LateUpdate()
@@ -131,32 +140,49 @@ namespace ARPG.Camera
 
         private void FollowCameraUpdate()
         {
-            var cameraLook = this.GetModel<IInputModel>().CameraLook;
 
-            if (cameraLook.sqrMagnitude >= CameraThreshold)
+            if (_cameraLook.sqrMagnitude >= CameraThreshold)
             {
-                _cameraTargetPitch -= cameraLook.y * RotateSpeed * Time.deltaTime;
-                _cameraTargetYaw += cameraLook.x * RotateSpeed * Time.deltaTime;
+                _cameraTargetPitch -= _cameraLook.y * RotateSpeed * Time.deltaTime;
+                _cameraTargetYaw += _cameraLook.x * RotateSpeed * Time.deltaTime;
             }
             _cameraTargetPitch = ClampAngle(_cameraTargetPitch, BottomClamp, TopClamp);
             _cameraTargetYaw = ClampAngle(_cameraTargetYaw, float.MinValue, float.MaxValue);
             _followRoot.transform.rotation = Quaternion.Euler(_cameraTargetPitch, _cameraTargetYaw, 0f);
         }
 
+        // ReSharper disable Unity.PerformanceAnalysis
         private void LockOnCameraUpdate()
         {
-            var lockTarget = this.GetModel<ICameraModel>().LockTarget;
+            var model = this.GetModel<ICameraModel>();
+            var lockTarget = model.LockTarget;
             if (lockTarget == null)
             {
-                this.GetModel<ICameraModel>().IsLockOn.Value = false;
+                model.IsLockOn.Value = false;
                 lockDot.enabled = false;
                 return;
             }
-            lockDot.enabled = true;
+
             var lockRootPos = lockTarget.LockRoot.position;
-            lockDot.rectTransform.position = _camera.WorldToScreenPoint(lockRootPos);
             var lockDir = lockRootPos - _followRoot.transform.position;
-            var targetRotation = Quaternion.LookRotation(lockDir);
+            if (lockDir.magnitude > LockRange)
+            {
+                model.IsLockOn.Value = false;
+                lockDot.enabled = false;
+                return;
+            }
+
+            var lockDotPos = _camera.WorldToScreenPoint(lockRootPos);
+            if (!_camera.rect.Contains(lockRootPos))
+            {
+                model.IsLockOn.Value = false;
+                lockDot.enabled = false;
+                return;
+            }
+            
+            lockDot.enabled = true;
+            lockDot.rectTransform.position = lockDotPos;
+            var targetRotation = Quaternion.LookRotation(lockDir.normalized);
             var eulerAngles = targetRotation.eulerAngles;
             eulerAngles.x = ClampAngle(eulerAngles.x, BottomClamp, TopClamp);
             targetRotation = Quaternion.Euler(eulerAngles);
@@ -199,13 +225,12 @@ namespace ARPG.Camera
         private void FilterTargetsInScreen(List<IActorHandle> list)
         {
             List<IActorHandle> filterList = new();
-            var screenRect = _camera.rect;
             var visualCone = GeometryUtility.CalculateFrustumPlanes(_camera);
             // ReSharper disable once ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator
             foreach (var target in list)
             {
                 Vector2 screenPoint = _camera.WorldToScreenPoint(target.LockRoot.position);
-                if (GeometryUtility.TestPlanesAABB(visualCone, target.ActorTrans.GetComponent<Collider>().bounds) && screenRect.Contains(screenPoint))
+                if (GeometryUtility.TestPlanesAABB(visualCone, target.ActorTrans.GetComponent<Collider>().bounds) && _camera.rect.Contains(screenPoint))
                 {
                     filterList.Add(target);
                 }
