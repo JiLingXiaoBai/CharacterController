@@ -10,5 +10,7 @@ namespace ARPG.Input
         
         public bool Jump { get; }
         
+        public bool LockOn { get; }
+        
     }
 }

@@ -14,6 +14,8 @@ namespace ARPG
     {
         void RegisterModel<T>(T model) where T : IModel;
 
+        void BindController<T>(UnityEngine.GameObject go) where T : UnityEngine.MonoBehaviour, IController;
+
         T GetModel<T>() where T : class, IModel;
 
         void SendCommand<T>(T command) where T : ICommand;
@@ -62,6 +64,12 @@ namespace ARPG
         }
 
         private IOCContainer mContainer = new IOCContainer();
+
+        public void BindController<TController>(UnityEngine.GameObject go) where TController : UnityEngine.MonoBehaviour, IController
+        {
+            var temp = go.GetComponent<TController>() ?? go.AddComponent<TController>();
+            temp.SetActor(this);
+        }
 
 
         public void RegisterModel<TModel>(TModel model) where TModel : IModel
@@ -131,9 +139,18 @@ namespace ARPG
 
     #region Controller
 
-    public interface IController : IBelongToActor, ICanSendCommand, ICanGetModel,
+    public interface IController : IBelongToActor, ICanSetActor, ICanSendCommand, ICanGetModel,
         ICanRegisterEvent, ICanSendQuery
     {
+    }
+
+    public abstract class AbstractController : UnityEngine.MonoBehaviour, IController
+    {
+        private IActor mActor;
+
+        IActor IBelongToActor.GetActor() => mActor;
+
+        void ICanSetActor.SetActor(IActor actor) => mActor = actor;
     }
 
     #endregion

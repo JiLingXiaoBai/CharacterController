@@ -2,15 +2,17 @@ using KinematicCharacterController;
 using UnityEngine;
 using ARPG.Input;
 
-namespace ARPG.Actor
+namespace ARPG.Movement
 {
     [RequireComponent(typeof(KinematicCharacterMotor))]
-    public class ActorController : MonoBehaviour, ICharacterController
+    public class MovementController : AbstractController, ICharacterController
     {
         private Transform _cameraTrans;
         private Vector3 _moveInputVector;
         private Vector3 _lookInputVector;
         private KinematicCharacterMotor _motor;
+
+        private IInputModel _inputModel;
 
         //最大移动速度
         private const float MaxStableSprintSpeed = 6f;
@@ -27,17 +29,14 @@ namespace ARPG.Actor
         private static readonly float[] NormalCapsuleDimensions = { 0.3f, 1.82f, 0.91f };
         private static readonly float[] CrouchCapsuleDimensions = { 0.5f, 1.2f, 0.6f };
 
-
-        private void Awake()
-        {
-        }
-
         private void Start()
         {
-            InputMgr.Instance.EnableGameplayInput();
             _motor = GetComponent<KinematicCharacterMotor>();
             _motor.CharacterController = this;
-            _cameraTrans = UnityEngine.Camera.main ? UnityEngine.Camera.main.transform : new UnityEngine.Camera().transform;
+            _cameraTrans = UnityEngine.Camera.main
+                ? UnityEngine.Camera.main.transform
+                : new UnityEngine.Camera().transform;
+            _inputModel = this.GetModel<IInputModel>();
         }
 
         private void Update()
@@ -47,7 +46,8 @@ namespace ARPG.Actor
 
         private void UpdateInput()
         {
-            var inputMovement = InputMgr.Instance.Movement;
+            var inputMovement = _inputModel.Movement;
+            
             var moveInputVector = new Vector3(inputMovement.x, 0f, inputMovement.y);
             var cameraPlanarDirection = Vector3.ProjectOnPlane(_cameraTrans.forward, _motor.CharacterUp).normalized;
             if (cameraPlanarDirection.sqrMagnitude == 0f)

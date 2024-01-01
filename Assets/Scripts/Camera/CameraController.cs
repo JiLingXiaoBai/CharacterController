@@ -2,6 +2,7 @@ using ARPG.Input;
 using Cinemachine;
 using UnityEngine;
 using UnityHFSM;
+
 namespace ARPG.Camera
 {
     public enum CameraState
@@ -11,11 +12,11 @@ namespace ARPG.Camera
         CloseUp,
     }
 
-    public class CameraController : MonoBehaviour
+    public class CameraController : AbstractController
     {
-        private const float TopClamp = 70.0f;
+        private const float TopClamp = 45.0f;
         private const float BottomClamp = -30.0f;
-        private const float Sensitivity = 0.12f;
+        private const float RotateSpeed = 5f;
 
         private const float CameraThreshold = 0.01f;
 
@@ -25,103 +26,125 @@ namespace ARPG.Camera
         // 偏航角
         private float _cameraTargetYaw;
 
-        private bool _isLockOn;
-
-        private bool _isClosingUp;
-        public bool IsLockOn
-        {
-            get => _isLockOn;
-            set
-            {
-                if (_isLockOn == value) return;
-                _isLockOn = value;
-                _cameraStateMachine.Trigger("CameraStateChange");
-            }
-        }
-
-        public bool IsClosingUp
-        {
-            get => _isClosingUp;
-            set
-            {
-                if (_isClosingUp == value) return;
-                _isClosingUp = value;
-                _cameraStateMachine.Trigger("CameraStateChange");
-            }
-        }
-
-
-        [SerializeField] private CinemachineVirtualCamera followCamera;
-
-        [SerializeField] private CinemachineVirtualCamera lockOnCamera;
-
-        [SerializeField] private CinemachineVirtualCamera closeUpCamera;
-
+        [SerializeField] private CinemachineVirtualCamera defaultCamera;
+        [SerializeField] private GameObject lockTarget;
+        private GameObject _followRoot;
         private StateMachine<CameraState, string> _cameraStateMachine;
 
         private void Awake()
         {
-            var targetEulerAngles = followCamera.Follow.rotation.eulerAngles;
-            _cameraTargetYaw = targetEulerAngles.y;
-            _cameraTargetPitch = targetEulerAngles.x;
+            _followRoot = new GameObject
+            {
+                name = "DefaultCameraFollowRoot",
+                transform =
+                {
+                    parent = defaultCamera.transform.parent,
+                    position = transform.position
+                }
+            };
+
+            defaultCamera.Follow = _followRoot.transform;
         }
 
         private void Start()
         {
+            var model = this.GetModel<ICameraModel>();
             _cameraStateMachine = new StateMachine<CameraState, string>();
             _cameraStateMachine.AddState(CameraState.Follow,
-                onEnter: state => { SwitchCameraState(CameraState.Follow); },
-                onLogic: state => { FollowCameraUpdate(); });
+                onEnter: _ => { SwitchCameraState(CameraState.Follow); },
+                onLogic: _ => { FollowCameraUpdate(); });
             _cameraStateMachine.AddState(CameraState.LockOn,
-                onEnter: state => { SwitchCameraState(CameraState.LockOn); });
+                onEnter: _ => { SwitchCameraState(CameraState.LockOn); },
+                onLogic: _ => { LockOnCameraUpdate(); });
             _cameraStateMachine.AddState(CameraState.CloseUp,
-                onEnter: state => { SwitchCameraState(CameraState.CloseUp); });
+                onEnter: _ => { SwitchCameraState(CameraState.CloseUp); });
             _cameraStateMachine.SetStartState(CameraState.Follow);
             _cameraStateMachine.AddTwoWayTriggerTransition("CameraStateChange", CameraState.Follow, CameraState.LockOn,
-                t => _isLockOn);
+                t => model.IsLockOn.Value);
             _cameraStateMachine.AddTriggerTransition("CameraStateChange", CameraState.Follow, CameraState.CloseUp,
-                t => !_isLockOn && _isClosingUp);
+                t => !model.IsLockOn.Value && model.IsClosingUp.Value);
             _cameraStateMachine.AddTriggerTransition("CameraStateChange", CameraState.LockOn, CameraState.CloseUp,
-                t => _isLockOn && _isClosingUp);
+                t => model.IsLockOn.Value && model.IsClosingUp.Value);
             _cameraStateMachine.AddTriggerTransition("CameraStateChange", CameraState.CloseUp, CameraState.Follow,
-                t => !_isLockOn && !_isClosingUp);
+                t => !model.IsLockOn.Value && !model.IsClosingUp.Value);
             _cameraStateMachine.AddTriggerTransition("CameraStateChange", CameraState.CloseUp, CameraState.LockOn,
-                t => _isLockOn && !_isClosingUp);
+                t => model.IsLockOn.Value && !model.IsClosingUp.Value);
             _cameraStateMachine.Init();
+
+            model.IsLockOn.RegisterWithInitValue(newCount => { _cameraStateMachine.Trigger("CameraStateChange"); })
+                .UnRegisterWhenGameObjectDestroyed(gameObject);
+            model.IsClosingUp.RegisterWithInitValue(newCount => { _cameraStateMachine.Trigger("CameraStateChange"); })
+                .UnRegisterWhenGameObjectDestroyed(gameObject);
         }
 
-        private void SwitchCameraState(CameraState state)
+        private void Update()
         {
-            followCamera.gameObject.SetActive(state == CameraState.Follow);
-            lockOnCamera.gameObject.SetActive(state == CameraState.LockOn);
-            closeUpCamera.gameObject.SetActive(state == CameraState.CloseUp);
-        }
-
-        private void FollowCameraUpdate()
-        {
-            var cameraLook = InputMgr.Instance.CameraLook;
-
-            if (cameraLook.sqrMagnitude >= CameraThreshold)
+            if (this.GetModel<IInputModel>().LockOn)
             {
-                _cameraTargetPitch -= cameraLook.y * Sensitivity;
-                _cameraTargetYaw += cameraLook.x * Sensitivity;
+                this.GetModel<ICameraModel>().IsLockOn.Value = true;
             }
-
-            _cameraTargetPitch = ClampAngle(_cameraTargetPitch, BottomClamp, TopClamp);
-            _cameraTargetYaw = ClampAngle(_cameraTargetYaw, float.MinValue, float.MaxValue);
-            followCamera.Follow.rotation = Quaternion.Euler(_cameraTargetPitch, _cameraTargetYaw, 0f);
-        }
-
-        private static float ClampAngle(float angle, float min, float max)
-        {
-            if (angle < -360f) angle += 360f;
-            if (angle > 360f) angle -= 360f;
-            return Mathf.Clamp(angle, min, max);
         }
 
         private void LateUpdate()
         {
+            _followRoot.transform.position = transform.position;
             _cameraStateMachine.OnLogic();
+        }
+
+        private void SwitchCameraState(CameraState state)
+        {
+            switch (state)
+            {
+                case CameraState.Follow:
+                    break;
+                case CameraState.LockOn:
+                    break;
+                case CameraState.CloseUp:
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        private void FollowCameraUpdate()
+        {
+            var cameraLook = this.GetModel<IInputModel>().CameraLook;
+
+            if (cameraLook.sqrMagnitude >= CameraThreshold)
+            {
+                _cameraTargetPitch -= cameraLook.y * RotateSpeed * Time.deltaTime;
+                _cameraTargetYaw += cameraLook.x * RotateSpeed * Time.deltaTime;
+            }
+            _cameraTargetPitch = ClampAngle(_cameraTargetPitch, BottomClamp, TopClamp);
+            _followRoot.transform.rotation = Quaternion.Euler(_cameraTargetPitch, _cameraTargetYaw, 0f);
+        }
+
+        private void LockOnCameraUpdate()
+        {
+            var lockDir = lockTarget.transform.position - _followRoot.transform.position;
+            var targetRotation = Quaternion.LookRotation(lockDir);
+            var eulerAngles = targetRotation.eulerAngles;
+            eulerAngles.x = ClampAngle(eulerAngles.x, BottomClamp, TopClamp);
+            targetRotation = Quaternion.Euler(eulerAngles);
+            _followRoot.transform.rotation =
+                Quaternion.RotateTowards(_followRoot.transform.rotation, targetRotation, RotateSpeed);
+        }
+
+
+        private static float ClampAngle(float angle, float min, float max)
+        {
+            if (angle is < 90f or > 270f)
+            {
+                if (angle > 180)
+                {
+                    angle -= 360f;
+                }
+                if (max > 180) max -= 360f;
+                if (min > 180) min -= 360f;
+            }
+            angle = Mathf.Clamp(angle, min, max);
+            if (angle < 0f) angle += 360f;
+            return angle;
         }
     }
 }

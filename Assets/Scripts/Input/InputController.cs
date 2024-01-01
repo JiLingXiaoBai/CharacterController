@@ -55,6 +55,15 @@ namespace ARPG.Input
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""LockOn"",
+                    ""type"": ""Button"",
+                    ""id"": ""4a51a7d8-3502-4e20-8925-a96408207068"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -167,6 +176,28 @@ namespace ARPG.Input
                     ""action"": ""CameraLook"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""7deec5c9-3602-47d8-a9e3-f0dc29aa98f3"",
+                    ""path"": ""<Gamepad>/rightStickPress"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""GamePad"",
+                    ""action"": ""LockOn"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""f95bae44-c1d5-475e-820e-e5c2ba0143bd"",
+                    ""path"": ""<Mouse>/middleButton"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""PC"",
+                    ""action"": ""LockOn"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -189,6 +220,7 @@ namespace ARPG.Input
             m_Gameplay_Movement = m_Gameplay.FindAction("Movement", throwIfNotFound: true);
             m_Gameplay_Jump = m_Gameplay.FindAction("Jump", throwIfNotFound: true);
             m_Gameplay_CameraLook = m_Gameplay.FindAction("CameraLook", throwIfNotFound: true);
+            m_Gameplay_LockOn = m_Gameplay.FindAction("LockOn", throwIfNotFound: true);
         }
 
         public void Dispose()
@@ -253,6 +285,7 @@ namespace ARPG.Input
         private readonly InputAction m_Gameplay_Movement;
         private readonly InputAction m_Gameplay_Jump;
         private readonly InputAction m_Gameplay_CameraLook;
+        private readonly InputAction m_Gameplay_LockOn;
         public struct GameplayActions
         {
             private @InputController m_Wrapper;
@@ -260,6 +293,7 @@ namespace ARPG.Input
             public InputAction @Movement => m_Wrapper.m_Gameplay_Movement;
             public InputAction @Jump => m_Wrapper.m_Gameplay_Jump;
             public InputAction @CameraLook => m_Wrapper.m_Gameplay_CameraLook;
+            public InputAction @LockOn => m_Wrapper.m_Gameplay_LockOn;
             public InputActionMap Get() { return m_Wrapper.m_Gameplay; }
             public void Enable() { Get().Enable(); }
             public void Disable() { Get().Disable(); }
@@ -278,6 +312,9 @@ namespace ARPG.Input
                 @CameraLook.started += instance.OnCameraLook;
                 @CameraLook.performed += instance.OnCameraLook;
                 @CameraLook.canceled += instance.OnCameraLook;
+                @LockOn.started += instance.OnLockOn;
+                @LockOn.performed += instance.OnLockOn;
+                @LockOn.canceled += instance.OnLockOn;
             }
 
             private void UnregisterCallbacks(IGameplayActions instance)
@@ -291,6 +328,9 @@ namespace ARPG.Input
                 @CameraLook.started -= instance.OnCameraLook;
                 @CameraLook.performed -= instance.OnCameraLook;
                 @CameraLook.canceled -= instance.OnCameraLook;
+                @LockOn.started -= instance.OnLockOn;
+                @LockOn.performed -= instance.OnLockOn;
+                @LockOn.canceled -= instance.OnLockOn;
             }
 
             public void RemoveCallbacks(IGameplayActions instance)
@@ -331,6 +371,7 @@ namespace ARPG.Input
             void OnMovement(InputAction.CallbackContext context);
             void OnJump(InputAction.CallbackContext context);
             void OnCameraLook(InputAction.CallbackContext context);
+            void OnLockOn(InputAction.CallbackContext context);
         }
     }
 }

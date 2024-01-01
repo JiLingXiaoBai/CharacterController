@@ -8,14 +8,14 @@ namespace ARPG.Input
         private InputController _inputController;
 
         public Vector2 Movement => _inputController.Gameplay.Movement.ReadValue<Vector2>();
-
         public Vector2 CameraLook => _inputController.Gameplay.CameraLook.ReadValue<Vector2>();
-
         public bool Jump => _inputController.Gameplay.Jump.triggered;
+        public bool LockOn => _inputController.Gameplay.LockOn.triggered;
 
         protected override void OnInit()
         {
             _inputController = new InputController();
+            EnableGameplayInput();
         }
 
         public void EnableGameplayInput() => SwitchActionMap(_inputController.Gameplay, false);

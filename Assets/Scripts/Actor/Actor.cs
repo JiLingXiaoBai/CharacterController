@@ -1,0 +1,18 @@
+using UnityEngine;
+
+namespace ARPG.Actor
+{
+    public class Actor : AbstractActor<Actor>
+    {
+        protected override void OnInit()
+        {
+            base.OnInit();
+        }
+    }
+
+    public interface IActorHandle
+    {
+        public Actor Actor { get; }
+        public Transform LockRoot { get; }
+    }
+}
