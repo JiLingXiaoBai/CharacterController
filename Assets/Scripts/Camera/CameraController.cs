@@ -23,6 +23,13 @@ namespace ARPG.Camera
         private const float CameraThreshold = 0.01f;
         private const float LockRange = 10f;
 
+        private readonly Rect _screenRect = new(0, 0, Screen.width, Screen.height);
+
+        private readonly Rect _lockCenterRect = new(0.03125f * Screen.width, 0.03125f * Screen.height,
+            0.9375f * Screen.width, 0.9375f * Screen.height);
+
+        private readonly Vector2 _screenCenter = new(Screen.width / 2f, Screen.height / 2f);
+
         // 俯仰角
         private float _cameraTargetPitch;
 
@@ -37,8 +44,8 @@ namespace ARPG.Camera
         private Collider[] _possibleTargets;
         private UnityEngine.Camera _camera;
         private Vector2 _cameraLook;
-        private Rect _lockCenterRect = new Rect(30, 30, Screen.width - 2 * 30, Screen.height - 2 * 30);
-        private Rect _screenRect = new Rect(0, 0, Screen.width, Screen.height);
+        private GetPossibleLockOnTargetsQuery _targetsQuery;
+
         private void Awake()
         {
             _followRoot = new GameObject
@@ -53,6 +60,8 @@ namespace ARPG.Camera
             _camera = UnityEngine.Camera.main ? UnityEngine.Camera.main : new UnityEngine.Camera();
             lockDot.enabled = false;
             defaultCamera.Follow = _followRoot.transform;
+            _targetsQuery = new GetPossibleLockOnTargetsQuery(defaultCamera.transform, LockRange,
+                LayerMask.GetMask("Enemy"), 10);
         }
 
         private void Start()
@@ -99,9 +108,7 @@ namespace ARPG.Camera
                 }
                 else
                 {
-                    lockDot.enabled = false;
-                    cameraModel.LockTarget = null;
-                    cameraModel.IsLockOn.Value = false;
+                    SetUnlock();
                 }
             }
 
@@ -160,8 +167,7 @@ namespace ARPG.Camera
             var lockTarget = model.LockTarget;
             if (lockTarget == null)
             {
-                lockDot.enabled = false;
-                model.IsLockOn.Value = false;
+                SetUnlock();
                 return;
             }
 
@@ -169,25 +175,22 @@ namespace ARPG.Camera
             var lockDir = lockRootPos - _followRoot.transform.position;
             if (lockDir.magnitude > LockRange)
             {
-                lockDot.enabled = false;
-                model.IsLockOn.Value = false;
+                SetUnlock();
                 return;
             }
 
             var lockDotPos = _camera.WorldToScreenPoint(lockRootPos);
             if (!_screenRect.Contains(lockDotPos))
             {
-                lockDot.enabled = false;
-                model.IsLockOn.Value = false;
+                SetUnlock();
                 return;
             }
             if (Physics.Linecast(_followRoot.transform.position, lockRootPos, lockObstacleLayer))
             {
-                lockDot.enabled = false;
-                model.IsLockOn.Value = false;
+                SetUnlock();
                 return;
             }
-            
+
             lockDot.enabled = true;
             lockDot.rectTransform.position = lockDotPos;
             var targetRotation = Quaternion.LookRotation(lockDir.normalized);
@@ -196,18 +199,6 @@ namespace ARPG.Camera
             targetRotation = Quaternion.Euler(eulerAngles);
             _followRoot.transform.rotation =
                 Quaternion.RotateTowards(_followRoot.transform.rotation, targetRotation, RotateSpeed);
-        }
-
-        private void TryLockOn()
-        {
-            var getPossibleLockOnTargetsQuery = new GetPossibleLockOnTargetsQuery(defaultCamera.transform.position,
-                LockRange, LayerMask.GetMask("Enemy"), 20);
-            var possibleHandles = this.SendQuery(getPossibleLockOnTargetsQuery);
-            FilterTargetsInScreen(possibleHandles);
-            SortTargetsByScreenPoints(possibleHandles);
-            if (possibleHandles.Count == 0) return;
-            this.GetModel<ICameraModel>().LockTarget = possibleHandles[0];
-            this.GetModel<ICameraModel>().IsLockOn.Value = true;
         }
 
         private static float ClampAngle(float angle, float min, float max)
@@ -226,9 +217,56 @@ namespace ARPG.Camera
             return angle;
         }
 
+        private void SetUnlock()
+        {
+            lockDot.enabled = false;
+            this.GetModel<ICameraModel>().LockTarget = null;
+            this.GetModel<ICameraModel>().IsLockOn.Value = false;
+        }
+
+        private void TryLockOn()
+        {
+            var possibleHandles = this.SendQuery(_targetsQuery);
+            possibleHandles = FilterTargetsInScreen(possibleHandles, _lockCenterRect);
+            if (possibleHandles.Count == 0) return;
+            this.GetModel<ICameraModel>().LockTarget = GetScreenCenterNearestTarget(possibleHandles);
+            this.GetModel<ICameraModel>().IsLockOn.Value = true;
+        }
+
+        private void ChangeLockOnTarget(bool isLeft)
+        {
+            var possibleHandles = this.SendQuery(_targetsQuery);
+            possibleHandles = FilterTargetsInScreen(possibleHandles, _screenRect);
+            var currentTarget = this.GetModel<ICameraModel>().LockTarget;
+            if (!possibleHandles.Contains(currentTarget))
+            {
+                SetUnlock();
+                return;
+            }
+
+            possibleHandles.Sort((t1, t2) =>
+                _camera.WorldToScreenPoint(t1.LockRoot.position).x
+                    .CompareTo(_camera.WorldToScreenPoint(t2.LockRoot.position).x));
+
+            var currentIndex = 0;
+            for (var i = 0; i < possibleHandles.Count; i++)
+            {
+                if (currentTarget == possibleHandles[i])
+                {
+                    currentIndex = i;
+                }
+            }
+            this.GetModel<ICameraModel>().LockTarget = isLeft switch
+            {
+                true when currentIndex > 0 => possibleHandles[currentIndex - 1],
+                false when currentIndex < possibleHandles.Count - 1 => possibleHandles[currentIndex + 1],
+                _ => this.GetModel<ICameraModel>().LockTarget
+            };
+        }
+
 
         // ReSharper disable Unity.PerformanceAnalysis
-        private void FilterTargetsInScreen(List<IActorHandle> list)
+        private List<IActorHandle> FilterTargetsInScreen(List<IActorHandle> list, Rect screenRect)
         {
             List<IActorHandle> filterList = new();
             var visualCone = GeometryUtility.CalculateFrustumPlanes(_camera);
@@ -238,23 +276,31 @@ namespace ARPG.Camera
                 if (!GeometryUtility.TestPlanesAABB(visualCone, target.ActorTrans.GetComponent<Collider>().bounds))
                     continue;
                 var screenPoint = _camera.WorldToScreenPoint(target.LockRoot.position);
-                if (!_lockCenterRect.Contains(screenPoint))
+                if (!screenRect.Contains(screenPoint))
                     continue;
-                
+
                 if (Physics.Linecast(_followRoot.transform.position, target.LockRoot.position, lockObstacleLayer))
                     continue;
                 filterList.Add(target);
             }
-            list = filterList;
+            return filterList;
         }
 
-        private void SortTargetsByScreenPoints(List<IActorHandle> list)
+        // ReSharper disable once SuggestBaseTypeForParameter
+        private IActorHandle GetScreenCenterNearestTarget(List<IActorHandle> handles)
         {
-            // ReSharper disable once Unity.PerformanceCriticalCodeCameraMain
-            var nearestReferencePoint = _camera.rect.center;
-            list.Sort((t1, t2) => Vector2
-                .Distance(_camera.WorldToScreenPoint(t1.LockRoot.position), nearestReferencePoint)
-                .CompareTo(Vector2.Distance(_camera.WorldToScreenPoint(t2.LockRoot.position), nearestReferencePoint)));
+            var result = handles[0];
+            var point = _camera.WorldToScreenPoint(result.LockRoot.position);
+            var sqrMinDistance = (new Vector2(point.x, point.y) - _screenCenter).sqrMagnitude;
+            for (var i = 1; i < handles.Count; i++)
+            {
+                var tempPoint = _camera.WorldToScreenPoint(handles[i].LockRoot.position);
+                var sqrDistance = (new Vector2(tempPoint.x, tempPoint.y) - _screenCenter).sqrMagnitude;
+                if (sqrMinDistance <= sqrDistance) continue;
+                sqrMinDistance = sqrDistance;
+                result = handles[i];
+            }
+            return result;
         }
     }
 }
