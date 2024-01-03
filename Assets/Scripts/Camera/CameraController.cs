@@ -19,8 +19,10 @@ namespace ARPG.Camera
     {
         private const float TopClamp = 45.0f;
         private const float BottomClamp = -30.0f;
-        private const float RotateSpeed = 5f;
+        private const float RotateSpeed = 3f;
         private const float CameraThreshold = 0.01f;
+        private const float ChangeTargetThreshold = 0.5f;
+        private const float ChangeTargetInterval = 0.5f;
         private const float LockRange = 10f;
 
         private readonly Rect _screenRect = new(0, 0, Screen.width, Screen.height);
@@ -30,11 +32,9 @@ namespace ARPG.Camera
 
         private readonly Vector2 _screenCenter = new(Screen.width / 2f, Screen.height / 2f);
 
-        // 俯仰角
-        private float _cameraTargetPitch;
+        private float _cameraTargetPitch; // 俯仰角
 
-        // 偏航角
-        private float _cameraTargetYaw;
+        private float _cameraTargetYaw; // 偏航角
 
         [SerializeField] private CinemachineVirtualCamera defaultCamera;
         [SerializeField] private Image lockDot;
@@ -43,8 +43,8 @@ namespace ARPG.Camera
         private StateMachine<CameraState, string> _cameraStateMachine;
         private Collider[] _possibleTargets;
         private UnityEngine.Camera _camera;
-        private Vector2 _cameraLook;
         private GetPossibleLockOnTargetsQuery _targetsQuery;
+        private Timer _changeTargetTimer;
 
         private void Awake()
         {
@@ -62,6 +62,7 @@ namespace ARPG.Camera
             defaultCamera.Follow = _followRoot.transform;
             _targetsQuery = new GetPossibleLockOnTargetsQuery(defaultCamera.transform, LockRange,
                 LayerMask.GetMask("Enemy"), 10);
+            _changeTargetTimer = new Timer();
         }
 
         private void Start()
@@ -95,33 +96,12 @@ namespace ARPG.Camera
                 .UnRegisterWhenGameObjectDestroyed(gameObject);
         }
 
+        private bool _changeTargetTimerFlag;
+
         private void Update()
         {
-            var inputModel = this.GetModel<IInputModel>();
-            var cameraModel = this.GetModel<ICameraModel>();
-            _cameraLook = inputModel.CameraLook;
-            if (inputModel.LockOn)
-            {
-                if (cameraModel.IsLockOn.Value == false)
-                {
-                    TryLockOn();
-                }
-                else
-                {
-                    SetUnlock();
-                }
-            }
-
-            if (cameraModel.IsLockOn.Value)
-            {
-                switch (_cameraLook.x)
-                {
-                    case < 0:
-                        break;
-                    case > 0:
-                        break;
-                }
-            }
+            CheckInputLockOn();
+            CheckInputChangeTarget();
         }
 
         private void LateUpdate()
@@ -150,10 +130,11 @@ namespace ARPG.Camera
 
         private void FollowCameraUpdate()
         {
-            if (_cameraLook.sqrMagnitude >= CameraThreshold)
+            var cameraLook = this.GetModel<IInputModel>().CameraLook;
+            if (cameraLook.sqrMagnitude >= CameraThreshold)
             {
-                _cameraTargetPitch -= _cameraLook.y * RotateSpeed * Time.deltaTime;
-                _cameraTargetYaw += _cameraLook.x * RotateSpeed * Time.deltaTime;
+                _cameraTargetPitch -= cameraLook.y * RotateSpeed * Time.deltaTime;
+                _cameraTargetYaw += cameraLook.x * RotateSpeed * Time.deltaTime;
             }
             _cameraTargetPitch = ClampAngle(_cameraTargetPitch, BottomClamp, TopClamp);
             _cameraTargetYaw = ClampAngle(_cameraTargetYaw, float.MinValue, float.MaxValue);
@@ -198,7 +179,7 @@ namespace ARPG.Camera
             eulerAngles.x = ClampAngle(eulerAngles.x, BottomClamp, TopClamp);
             targetRotation = Quaternion.Euler(eulerAngles);
             _followRoot.transform.rotation =
-                Quaternion.RotateTowards(_followRoot.transform.rotation, targetRotation, RotateSpeed);
+                Quaternion.RotateTowards(_followRoot.transform.rotation, targetRotation, 1f);
         }
 
         private static float ClampAngle(float angle, float min, float max)
@@ -217,6 +198,47 @@ namespace ARPG.Camera
             return angle;
         }
 
+        private void CheckInputLockOn()
+        {
+            var inputModel = this.GetModel<IInputModel>();
+            var cameraModel = this.GetModel<ICameraModel>();
+            if (!inputModel.LockOn) return;
+            if (cameraModel.IsLockOn.Value == false)
+            {
+                TryLockOn();
+            }
+            else
+            {
+                SetUnlock();
+            }
+        }
+
+        private void CheckInputChangeTarget()
+        {
+            if (!this.GetModel<ICameraModel>().IsLockOn.Value) return;
+            var changeTarget = this.GetModel<IInputModel>().ChangeTarget;
+            if (Mathf.Abs(changeTarget) > ChangeTargetThreshold)
+            {
+                if (!_changeTargetTimerFlag)
+                {
+                    ChangeLockOnTarget(changeTarget < 0f);
+                    _changeTargetTimer.Reset();
+                    _changeTargetTimerFlag = true;
+                }
+                else
+                {
+                    if (_changeTargetTimer > ChangeTargetInterval)
+                    {
+                        _changeTargetTimerFlag = false;
+                    }
+                }
+            }
+            else
+            {
+                _changeTargetTimerFlag = false;
+            }
+        }
+        
         private void SetUnlock()
         {
             lockDot.enabled = false;

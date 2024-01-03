@@ -12,5 +12,7 @@ namespace ARPG.Input
         
         public bool LockOn { get; }
         
+        public float ChangeTarget { get; }
+        
     }
 }

@@ -64,6 +64,15 @@ namespace ARPG.Input
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""ChangeTarget"",
+                    ""type"": ""Value"",
+                    ""id"": ""a6b95da8-10fd-4475-b197-e7b8ec43e915"",
+                    ""expectedControlType"": ""Axis"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": true
                 }
             ],
             ""bindings"": [
@@ -160,7 +169,7 @@ namespace ARPG.Input
                     ""id"": ""2efe8423-f10a-46fd-8c17-b50d1efafe41"",
                     ""path"": ""<Gamepad>/rightStick"",
                     ""interactions"": """",
-                    ""processors"": ""ScaleVector2(x=5,y=5)"",
+                    ""processors"": ""ScaleVector2(x=50,y=50)"",
                     ""groups"": ""GamePad"",
                     ""action"": ""CameraLook"",
                     ""isComposite"": false,
@@ -198,6 +207,28 @@ namespace ARPG.Input
                     ""action"": ""LockOn"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""55af789c-7035-42b8-b1a8-42afe983470f"",
+                    ""path"": ""<Mouse>/scroll/y"",
+                    ""interactions"": """",
+                    ""processors"": ""Clamp(min=-1,max=1)"",
+                    ""groups"": ""PC"",
+                    ""action"": ""ChangeTarget"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""d3242542-c8b0-40a4-8b39-b5ddb27e3636"",
+                    ""path"": ""<Gamepad>/rightStick/x"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""GamePad"",
+                    ""action"": ""ChangeTarget"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -221,6 +252,7 @@ namespace ARPG.Input
             m_Gameplay_Jump = m_Gameplay.FindAction("Jump", throwIfNotFound: true);
             m_Gameplay_CameraLook = m_Gameplay.FindAction("CameraLook", throwIfNotFound: true);
             m_Gameplay_LockOn = m_Gameplay.FindAction("LockOn", throwIfNotFound: true);
+            m_Gameplay_ChangeTarget = m_Gameplay.FindAction("ChangeTarget", throwIfNotFound: true);
         }
 
         public void Dispose()
@@ -286,6 +318,7 @@ namespace ARPG.Input
         private readonly InputAction m_Gameplay_Jump;
         private readonly InputAction m_Gameplay_CameraLook;
         private readonly InputAction m_Gameplay_LockOn;
+        private readonly InputAction m_Gameplay_ChangeTarget;
         public struct GameplayActions
         {
             private @InputController m_Wrapper;
@@ -294,6 +327,7 @@ namespace ARPG.Input
             public InputAction @Jump => m_Wrapper.m_Gameplay_Jump;
             public InputAction @CameraLook => m_Wrapper.m_Gameplay_CameraLook;
             public InputAction @LockOn => m_Wrapper.m_Gameplay_LockOn;
+            public InputAction @ChangeTarget => m_Wrapper.m_Gameplay_ChangeTarget;
             public InputActionMap Get() { return m_Wrapper.m_Gameplay; }
             public void Enable() { Get().Enable(); }
             public void Disable() { Get().Disable(); }
@@ -315,6 +349,9 @@ namespace ARPG.Input
                 @LockOn.started += instance.OnLockOn;
                 @LockOn.performed += instance.OnLockOn;
                 @LockOn.canceled += instance.OnLockOn;
+                @ChangeTarget.started += instance.OnChangeTarget;
+                @ChangeTarget.performed += instance.OnChangeTarget;
+                @ChangeTarget.canceled += instance.OnChangeTarget;
             }
 
             private void UnregisterCallbacks(IGameplayActions instance)
@@ -331,6 +368,9 @@ namespace ARPG.Input
                 @LockOn.started -= instance.OnLockOn;
                 @LockOn.performed -= instance.OnLockOn;
                 @LockOn.canceled -= instance.OnLockOn;
+                @ChangeTarget.started -= instance.OnChangeTarget;
+                @ChangeTarget.performed -= instance.OnChangeTarget;
+                @ChangeTarget.canceled -= instance.OnChangeTarget;
             }
 
             public void RemoveCallbacks(IGameplayActions instance)
@@ -372,6 +412,7 @@ namespace ARPG.Input
             void OnJump(InputAction.CallbackContext context);
             void OnCameraLook(InputAction.CallbackContext context);
             void OnLockOn(InputAction.CallbackContext context);
+            void OnChangeTarget(InputAction.CallbackContext context);
         }
     }
 }

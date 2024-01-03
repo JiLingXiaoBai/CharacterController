@@ -11,7 +11,7 @@ namespace ARPG.Input
         public Vector2 CameraLook => _inputController.Gameplay.CameraLook.ReadValue<Vector2>();
         public bool Jump => _inputController.Gameplay.Jump.triggered;
         public bool LockOn => _inputController.Gameplay.LockOn.triggered;
-        public bool SwitchTarget => _inputController.Gameplay.CameraLook.triggered;
+        public float ChangeTarget => _inputController.Gameplay.ChangeTarget.ReadValue<float>();
         
         protected override void OnInit()
         {
