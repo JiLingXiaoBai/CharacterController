@@ -1,3 +1,4 @@
+using ARPG.Camera;
 using KinematicCharacterController;
 using UnityEngine;
 using ARPG.Input;
@@ -7,12 +8,9 @@ namespace ARPG.Movement
     [RequireComponent(typeof(KinematicCharacterMotor))]
     public class MovementController : AbstractController, ICharacterController
     {
-        private Transform _cameraTrans;
         private Vector3 _moveInputVector;
         private Vector3 _lookInputVector;
         private KinematicCharacterMotor _motor;
-
-        private IInputModel _inputModel;
 
         //最大移动速度
         private const float MaxStableSprintSpeed = 6f;
@@ -33,10 +31,6 @@ namespace ARPG.Movement
         {
             _motor = GetComponent<KinematicCharacterMotor>();
             _motor.CharacterController = this;
-            _cameraTrans = UnityEngine.Camera.main
-                ? UnityEngine.Camera.main.transform
-                : new UnityEngine.Camera().transform;
-            _inputModel = this.GetModel<IInputModel>();
         }
 
         private void Update()
@@ -46,19 +40,20 @@ namespace ARPG.Movement
 
         private void UpdateInput()
         {
-            var inputMovement = _inputModel.Movement;
-            
-            var moveInputVector = new Vector3(inputMovement.x, 0f, inputMovement.y);
-            var cameraPlanarDirection = Vector3.ProjectOnPlane(_cameraTrans.forward, _motor.CharacterUp).normalized;
+            var inputMovement = this.GetModel<IInputModel>().Movement;
+            var cameraTrans = this.GetModel<ICameraModel>().CameraTrans;
+            var moveInputVector = Vector3.ClampMagnitude(new Vector3(inputMovement.x, 0f, inputMovement.y), 1f);
+            var cameraPlanarDirection = Vector3.ProjectOnPlane(cameraTrans.forward, _motor.CharacterUp).normalized;
             if (cameraPlanarDirection.sqrMagnitude == 0f)
             {
-                cameraPlanarDirection = Vector3.ProjectOnPlane(_cameraTrans.up, _motor.CharacterUp).normalized;
+                cameraPlanarDirection = Vector3.ProjectOnPlane(cameraTrans.up, _motor.CharacterUp).normalized;
             }
 
             var cameraPlanarRotation = Quaternion.LookRotation(cameraPlanarDirection, _motor.CharacterUp);
 
             _moveInputVector = cameraPlanarRotation * moveInputVector;
-            _lookInputVector = _moveInputVector.normalized;
+
+            _lookInputVector = this.GetModel<ICameraModel>().IsLockOn.Value ? cameraPlanarDirection : _moveInputVector.normalized;
         }
 
 

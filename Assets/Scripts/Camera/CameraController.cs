@@ -68,6 +68,7 @@ namespace ARPG.Camera
         private void Start()
         {
             var model = this.GetModel<ICameraModel>();
+            model.CameraTrans = _camera.transform;
             _cameraStateMachine = new StateMachine<CameraState, string>();
             _cameraStateMachine.AddState(CameraState.Follow,
                 onEnter: _ => { SwitchCameraState(CameraState.Follow); },
