@@ -1,3 +1,4 @@
+using ARPG.Animation;
 using ARPG.Camera;
 using ARPG.Input;
 using ARPG.Movement;
@@ -9,6 +10,7 @@ namespace ARPG.Actor.Player
     {
         [SerializeField] private GameObject cameraHandle;
         [SerializeField] private GameObject modelHandle;
+        [SerializeField] private GameObject animHandle;
         [SerializeField] private Transform lockRoot;
         public Actor ActorObject { get; private set; }
         public Transform LockRoot => lockRoot;
@@ -23,6 +25,7 @@ namespace ARPG.Actor.Player
             
             ActorObject.BindController<CameraController>(cameraHandle);
             ActorObject.BindController<MovementController>(modelHandle);
+            ActorObject.BindController<AnimController>(animHandle);
             ActorObject.Init();
         }
     }

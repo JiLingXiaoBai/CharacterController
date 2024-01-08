@@ -4276,6 +4276,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cameraHandle: {fileID: 778561205}
   modelHandle: {fileID: 4790146668039427953}
+  animHandle: {fileID: 3790799699156737067}
   lockRoot: {fileID: 778561206}
 --- !u!4 &7619213598984786962
 Transform:

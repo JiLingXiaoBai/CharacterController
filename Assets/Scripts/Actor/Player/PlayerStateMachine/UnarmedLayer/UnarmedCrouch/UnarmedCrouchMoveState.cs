@@ -1,10 +1,11 @@
 using UnityHFSM;
+using ARPG.Animation;
 
 namespace ARPG.Actor.Player
 {
     public class UnarmedCrouchMoveState : StateBase<PlayerStateConst.UnarmedCrouch>
     {
-        public UnarmedCrouchMoveState(bool needsExitTime, bool isGhostState = false) : base(needsExitTime, isGhostState)
+        public UnarmedCrouchMoveState(IAnimController animController) : base(needsExitTime: false, isGhostState: false)
         {
         }
     }

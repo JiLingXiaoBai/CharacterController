@@ -1,3 +1,4 @@
+using ARPG.Animation;
 using UnityHFSM;
 
 namespace ARPG.Actor.Player
@@ -14,35 +15,35 @@ namespace ARPG.Actor.Player
         private readonly StateMachine<PlayerStateConst.Unarmed, PlayerStateConst.UnarmedJump, string> _unarmedJump;
 
 
-        public PlayerStateMachine()
+        public PlayerStateMachine(IAnimController animController)
         {
             _stateMachine = new HybridStateMachine<PlayerStateConst.PlayerSuperState>();
             _unarmed = new HybridStateMachine<PlayerStateConst.PlayerSuperState, PlayerStateConst.Unarmed, string>();
 
             _unarmedBase = new StateMachine<PlayerStateConst.Unarmed, PlayerStateConst.UnarmedBase, string>();
-            var unarmedMoveState = new UnarmedMoveState(false);
+            var unarmedMoveState = new UnarmedMoveState(animController);
             _unarmedBase.AddState(PlayerStateConst.UnarmedBase.Move, unarmedMoveState);
-            var unarmedEquipState = new UnarmedEquipState(false);
+            var unarmedEquipState = new UnarmedEquipState(animController);
             _unarmedBase.AddState(PlayerStateConst.UnarmedBase.Equip, unarmedEquipState);
             _unarmed.AddState(PlayerStateConst.Unarmed.BaseMotion, _unarmedBase);
 
             _unarmedCrouch = new StateMachine<PlayerStateConst.Unarmed, PlayerStateConst.UnarmedCrouch, string>();
-            var unarmedCrouchEquipState = new UnarmedCrouchEquipState(false);
+            var unarmedCrouchEquipState = new UnarmedCrouchEquipState(animController);
             _unarmedCrouch.AddState(PlayerStateConst.UnarmedCrouch.CrouchEquip, unarmedCrouchEquipState);
-            var unarmedCrouchInState = new UnarmedCrouchInState(false);
+            var unarmedCrouchInState = new UnarmedCrouchInState(animController);
             _unarmedCrouch.AddState(PlayerStateConst.UnarmedCrouch.CrouchIn, unarmedCrouchInState);
-            var unarmedCrouchOutState = new UnarmedCrouchOutState(false);
+            var unarmedCrouchOutState = new UnarmedCrouchOutState(animController);
             _unarmedCrouch.AddState(PlayerStateConst.UnarmedCrouch.CrouchOut, unarmedCrouchOutState);
-            var unarmedCrouchMoveState = new UnarmedCrouchMoveState(false);
+            var unarmedCrouchMoveState = new UnarmedCrouchMoveState(animController);
             _unarmedCrouch.AddState(PlayerStateConst.UnarmedCrouch.CrouchMove, unarmedCrouchMoveState);
             _unarmed.AddState(PlayerStateConst.Unarmed.CrouchMotion, _unarmedCrouch);
 
             _unarmedJump = new StateMachine<PlayerStateConst.Unarmed, PlayerStateConst.UnarmedJump, string>();
-            var unarmedFallState = new UnarmedFallState(false);
+            var unarmedFallState = new UnarmedFallState(animController);
             _unarmedJump.AddState(PlayerStateConst.UnarmedJump.Fall, unarmedFallState);
-            var unarmedJumpState = new UnarmedJumpState(false);
+            var unarmedJumpState = new UnarmedJumpState(animController);
             _unarmedJump.AddState(PlayerStateConst.UnarmedJump.Jump, unarmedJumpState);
-            var unarmedLandState = new UnarmedLandState(false);
+            var unarmedLandState = new UnarmedLandState(animController);
             _unarmedJump.AddState(PlayerStateConst.UnarmedJump.Land, unarmedLandState);
             _unarmed.AddState(PlayerStateConst.Unarmed.JumpMotion, _unarmedJump);
 
