@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using ARPG.Actor;
 using ARPG.Input;
@@ -80,20 +81,20 @@ namespace ARPG.Camera
                 onEnter: _ => { SwitchCameraState(CameraState.CloseUp); });
             _cameraStateMachine.SetStartState(CameraState.Follow);
             _cameraStateMachine.AddTwoWayTriggerTransition("CameraStateChange", CameraState.Follow, CameraState.LockOn,
-                t => model.IsLockOn.Value);
+                _ => model.IsLockOn.Value);
             _cameraStateMachine.AddTriggerTransition("CameraStateChange", CameraState.Follow, CameraState.CloseUp,
-                t => !model.IsLockOn.Value && model.IsClosingUp.Value);
+                _ => !model.IsLockOn.Value && model.IsClosingUp.Value);
             _cameraStateMachine.AddTriggerTransition("CameraStateChange", CameraState.LockOn, CameraState.CloseUp,
-                t => model.IsLockOn.Value && model.IsClosingUp.Value);
+                _ => model.IsLockOn.Value && model.IsClosingUp.Value);
             _cameraStateMachine.AddTriggerTransition("CameraStateChange", CameraState.CloseUp, CameraState.Follow,
-                t => !model.IsLockOn.Value && !model.IsClosingUp.Value);
+                _ => !model.IsLockOn.Value && !model.IsClosingUp.Value);
             _cameraStateMachine.AddTriggerTransition("CameraStateChange", CameraState.CloseUp, CameraState.LockOn,
-                t => model.IsLockOn.Value && !model.IsClosingUp.Value);
+                _ => model.IsLockOn.Value && !model.IsClosingUp.Value);
             _cameraStateMachine.Init();
 
-            model.IsLockOn.RegisterWithInitValue(newCount => { _cameraStateMachine.Trigger("CameraStateChange"); })
+            model.IsLockOn.RegisterWithInitValue(_ => { _cameraStateMachine.Trigger("CameraStateChange"); })
                 .UnRegisterWhenGameObjectDestroyed(gameObject);
-            model.IsClosingUp.RegisterWithInitValue(newCount => { _cameraStateMachine.Trigger("CameraStateChange"); })
+            model.IsClosingUp.RegisterWithInitValue(_ => { _cameraStateMachine.Trigger("CameraStateChange"); })
                 .UnRegisterWhenGameObjectDestroyed(gameObject);
         }
 
@@ -125,7 +126,7 @@ namespace ARPG.Camera
                 case CameraState.CloseUp:
                     break;
                 default:
-                    break;
+                    throw new ArgumentOutOfRangeException(nameof(state), state, "Error State");
             }
         }
 
