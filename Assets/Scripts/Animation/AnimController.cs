@@ -4,21 +4,16 @@ using UnityHFSM;
 
 namespace ARPG.Animation
 {
-    public interface IAnimController : IController
-    {
-        AnimancerComponent Animancer { get; set; }
-    }
-    
     [RequireComponent(typeof(AnimancerComponent))]
     [RequireComponent(typeof(Animator))]
-    public class AnimController : AbstractController, IAnimController
+    public class AnimController : AbstractController
     {
-        public AnimancerComponent Animancer { get; set; }
+        private AnimancerComponent _animancer;
 
         private void Awake()
         {
-            Animancer = gameObject.GetComponent<AnimancerComponent>();
-            Animancer.Animator = gameObject.GetComponent<Animator>();
+            _animancer = gameObject.GetComponent<AnimancerComponent>();
+            _animancer.Animator = gameObject.GetComponent<Animator>();
         }
     }
 }

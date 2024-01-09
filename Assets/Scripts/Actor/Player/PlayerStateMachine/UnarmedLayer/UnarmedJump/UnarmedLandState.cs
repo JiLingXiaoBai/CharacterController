@@ -3,9 +3,9 @@ using ARPG.Animation;
 
 namespace ARPG.Actor.Player
 {
-    public class UnarmedLandState : StateBase<PlayerStateConst.UnarmedJump>
+    public class UnarmedLandState : StateBase<ActorStateConst.UnarmedJump>
     {
-        public UnarmedLandState(IAnimController animController) : base(needsExitTime: false, isGhostState: false)
+        public UnarmedLandState(Actor actor) : base(needsExitTime: false, isGhostState: false)
         {
         }
     }

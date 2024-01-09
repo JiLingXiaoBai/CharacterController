@@ -1,8 +1,8 @@
-namespace ARPG.Actor.Player
+namespace ARPG.Actor
 {
-    public static class PlayerStateConst
+    public static class ActorStateConst
     {
-        public enum PlayerSuperState
+        public enum ActorSuperState
         {
             Unarmed,
             Armed,

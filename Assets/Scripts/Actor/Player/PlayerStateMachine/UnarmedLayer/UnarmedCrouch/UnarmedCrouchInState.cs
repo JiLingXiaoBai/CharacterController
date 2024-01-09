@@ -3,9 +3,9 @@ using ARPG.Animation;
 
 namespace ARPG.Actor.Player
 {
-    public class UnarmedCrouchInState : StateBase<PlayerStateConst.UnarmedCrouch>
+    public class UnarmedCrouchInState : StateBase<ActorStateConst.UnarmedCrouch>
     {
-        public UnarmedCrouchInState(IAnimController animController) : base(needsExitTime: false, isGhostState: false)
+        public UnarmedCrouchInState(Actor actor) : base(needsExitTime: false, isGhostState: false)
         {
         }
     }
